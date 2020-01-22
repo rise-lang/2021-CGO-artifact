@@ -1,0 +1,7 @@
+remote: koetho@130.209.252.193
+remote-cc: icc
+kind: cpu
+num-threads: 4
+vector-width: 8
+ocl-platform-name: Intel(R) CPU Runtime
+halide: x86-64-linux-avx-avx2-fma-sse41

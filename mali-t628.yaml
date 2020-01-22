@@ -1,0 +1,13 @@
+remote: odroid@130.209.252.128
+remote-cc: clang
+kind: gpu
+num-threads: 512
+vector-width: 4
+workgroup-max: 256
+workgroup-mod: 8
+tile-x-range: [4, 32]
+tile-y-range: [2, 8]
+before-measuring: sudo -n ~/perf_on_a7
+after-measuring: sudo -n ~/perf_off
+ocl-platform-name: ARM Platform
+halide: arm-32-linux-opencl

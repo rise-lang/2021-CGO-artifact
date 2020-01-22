@@ -1,0 +1,12 @@
+remote: koetho@130.209.252.193
+remote-cc: icc
+kind: gpu
+num-threads: 168
+vector-width: 4
+workgroup-max: 256
+workgroup-mod: 16
+tile-x-range: [8, 64]
+tile-y-range: [2, 8]
+ocl-platform-name: Intel(R) OpenCL HD Graphics
+# workgroup-sizes 64 - 256
+halide: x86-64-linux-avx-avx2-fma-sse41-opencl
