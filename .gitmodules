@@ -1,6 +1,6 @@
 [submodule "lib/halide"]
 	path = lib/halide
-	url = https://github.com/halide/Halide
+	url = https://gitlab.com/Bastacyclop/Halide
 [submodule "lib/shine"]
 	path = lib/shine
 	url = https://github.com/rise-lang/shine
