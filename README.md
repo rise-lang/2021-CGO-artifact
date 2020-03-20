@@ -1,4 +1,4 @@
-# Artifact for Shiny Image Processing
+# Artifact for Image Processing
 
 The host drives the experiment on multiple targets.
 We recommend using an X86 Linux machine for the host.
@@ -6,16 +6,11 @@ We recommend using an X86 Linux machine for the host.
 ## Installation on Host
 
 ```sh
-git clone --recursive https://gitlab.com/Bastacyclop/shiny-imgproc.git
-cd shiny-imgproc
+git clone --recursive https://gitlab.com/Bastacyclop/2020-image-processing-artifact.git
+cd 2020-image-processing-artifact
 ```
 
 We will refer to this directory as `$HOST`.
-
-TODO: java memory quick fix
-```sh
-export JAVA_OPTS="-Xms512m -Xmx4G -Xss26m"
-```
 
 ## Host Dependencies
 
@@ -44,7 +39,7 @@ Given a `$HOST/$TARGET.yaml` configuration file, the experiment can be run on
 
 **You need ssh access to the remote target without password prompt.**
 
-This will create a `shiny-imgproc-experiment` folder in the home directory
+This will create a `2020-image-processing-experiment` folder in the home directory
 of the remote user, where files will be uploaded during the experiment.
 The configuration files used for the paper are present in this artifact,
 but you will need to change them according to your own setup.
@@ -83,7 +78,7 @@ Software used:
 - icc 19.0.5 (installed with Intel System Studio 2019 update 5)
 - OpenCL implementation for the CPU (installed with Intel System Studio)
 - OpenCL implementation for the GPU using the [Intel Graphics Compute Runtime](https://github.com/intel/compute-runtime)
-  
+
 ## Odroid XU4 with ARM processors
 
 Configuration files:

@@ -29,7 +29,7 @@ fn main() {
         collect::info(&env);
         collect::hardware_info(&env);
 
-        benchmark::camera_pipe(&env);
+        benchmark::harris(&env);
 
         if let Some(ref cmd) = env.target.after_measuring {
             target_run(cmd).log(&mut io::sink(), &env).unwrap();

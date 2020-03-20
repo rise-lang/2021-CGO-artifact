@@ -3,7 +3,7 @@ use crate::*;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
-#[structopt(name = "binomial filter experiment")]
+#[structopt(name = "harris corner detection experiment")]
 struct Opt {
     /// Target
     #[structopt(long, short)]
@@ -54,7 +54,7 @@ fn halide<W: io::Write>(env: &Env, w: &mut W) {
         .log(w, env).expect("could not upload Halide headers");
     upload_file(&halide_path.join("tools").join("halide_image_io.h"))
         .log(w, env).expect("could not upload Halide headers");
-    upload_file(&halide_path.join("apps").join("images").join("bayer_raw.png"))
+    upload_file(&halide_path.join("apps").join("images").join("rgba.png"))
         .log(w, env).expect("could not upload Halide images");
 }
 
@@ -63,7 +63,7 @@ fn shine<W: io::Write>(env: &Env, w: &mut W) {
         .current_dir(env.lib.join("shine"))
         .log(w, env).expect("could not setup shine repository");
 
-    let rise_n_shine_path = env.lib.join("imgproc-rise-and-shine");
+    let rise_n_shine_path = env.lib.join("harris-rise-and-shine");
     fs::create_dir_all(rise_n_shine_path.join("gen").join(&env.target_name))
         .unwrap();
 }

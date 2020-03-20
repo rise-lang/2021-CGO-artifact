@@ -1,63 +1,40 @@
 use crate::*;
 
-pub fn camera_pipe(env: &Env) {
+pub fn harris(env: &Env) {
     let (ref mut log, ref mut res) =
-        benchmark_result("camera_pipe", "camera raw pipeline", &env);
+        benchmark_result("harris", "harris corner detection", &env);
 
-    let halide_camera_pipe = env.lib.join("halide")
-        .join("apps").join("camera_pipe");
-    host_run("make").arg(format!("bin/{}/camera_pipe.a", env.target.halide))
-        .current_dir(&halide_camera_pipe)
-        .log(log, env).expect("could not build camera pipe");
-    host_run("make").arg(format!("bin/{}/camera_pipe_auto_schedule.a", env.target.halide))
-        .current_dir(&halide_camera_pipe)
-        .log(log, env).expect("could not build camera pipe");
-    upload_file_to(&halide_camera_pipe.join("bin").join(&env.target.halide),
+    let halide_harris = env.lib.join("halide")
+        .join("apps").join("harris");
+    host_run("make").arg(format!("bin/{}/harris.a", env.target.halide))
+        .current_dir(&halide_harris)
+        .log(log, env).expect("could not build harris");
+    host_run("make").arg(format!("bin/{}/harris_auto_schedule.a", env.target.halide))
+        .current_dir(&halide_harris)
+        .log(log, env).expect("could not build harris");
+    host_run("make").arg(format!("bin/{}/runtime.a", env.target.halide))
+        .current_dir(&halide_harris)
+        .log(log, env).expect("could not build runtime");
+    upload_file_to(&halide_harris.join("bin").join(&env.target.halide),
                    "halide-gen")
-        .log(log, env).expect("could not upload camera pipe files");
+        .log(log, env).expect("could not upload harris files");
 
-    println!("camera pipe, rise and shine!");
-    let rise_n_shine_path = env.lib.join("imgproc-rise-and-shine");
-    let gen_path = rise_n_shine_path.join("gen").join(&env.target_name);
-    let output = host_run("sbt").arg("run")
+    println!("harris, rise & shine!");
+    let rise_n_shine_path = env.lib.join("harris-rise-and-shine");
+    let gen_path = rise_n_shine_path.join("gen");//.join(&env.target_name);
+    host_run("sbt").arg("run")
         .current_dir(&rise_n_shine_path)
-        .log(log, env).expect("could not compile Rise & Shine executable");
-    let code = output.split(">>> GENERATED CODE <<<").nth(1)
-        .expect("could not find start of generated code")
-        .split("<<< CODE GENERATED >>>").nth(0)
-        .expect("could not find end of generated code");
-    let path = gen_path.join("camera_pipe").with_extension("c");
-    {
-        let mut f = fs::File::create(&path).unwrap();
-        f.write_fmt(format_args!(r#"
-#include "shine_header.h"
-{}
-"#, code)).unwrap();
-    }
+        .log(log, env).expect("could not rise & shine");
 
     upload_file_to(&gen_path, "shine-gen")
         .log(log, env).unwrap();
 
+    let bin = &format!("{}/harris", env.remote_bin);
     if target_run(&env.target.remote_cc)
-        .arg("shine-gen/camera_pipe.c")
-        .arg("-I").arg("src")
-        .arg("-no-pie")
-        .arg("-fdiagnostics-color")
-        .arg("-Ofast")
-        .arg("-fopenmp")
-        .arg("-lm")
-        .arg("-c").arg("-o").arg("shine-gen/camera_pipe.o")
-        .log(log, env).is_none()
-    {
-        return;
-    }
-
-    let bin = &format!("{}/camera_pipe", env.remote_bin);
-    if target_run(&env.target.remote_cc)
-        .arg("src/camera_pipe.cpp")
-        .arg("shine-gen/camera_pipe.o")
-        .arg("halide-gen/camera_pipe.a")
-        .arg("halide-gen/camera_pipe_auto_schedule.a")
+        .arg("src/harris.cpp")
+        .arg("halide-gen/harris.a")
+        .arg("halide-gen/harris_auto_schedule.a")
+        .arg("halide-gen/runtime.a")
         .arg("-I").arg("src")
         .arg("-I").arg("halide-gen")
         .arg("-I").arg("lib/halide/include")
@@ -65,38 +42,33 @@ pub fn camera_pipe(env: &Env) {
         .arg("-no-pie")
         .arg("-fdiagnostics-color")
         .arg("-O2").arg("-lstdc++").arg("-std=c++14")
-        .arg("-fopenmp")
         .arg("-lm").arg("-lpthread").arg("-ldl").arg("-lpng").arg("-ljpeg")
+        .arg("-lOpenCL")
         .arg("-o").arg(bin)
         .log(log, env).is_none()
     {
         return;
     }
 
-    let envs = match env.target.kind {
-        TargetKind::GPU => vec![
+    let (envs, device_type_str) = match env.target.kind {
+        TargetKind::GPU => (vec![
             ("HL_OCL_DEVICE_TYPE", "gpu"),
             ("HL_OCL_PLATFORM_NAME", &env.target.ocl_platform_name)
-        ],
-        TargetKind::CPU => vec![]
+        ], "gpu"),
+        TargetKind::CPU => (vec![], "cpu")
     };
     if let Some(ref cpu_a) = env.target.cpu_affinity {
         target_run("taskset").arg("-c").arg(cpu_a).arg(bin)
-            .arg("lib/halide/apps/images/bayer_raw.png")
-            .arg("3700").arg("2.0").arg("50").arg("1.0").arg("5")
-            .arg("camera_pipe.png")
+            .arg("lib/halide/apps/images/rgba.png")
+            .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("10")
+            .arg("harris.png")
             .envs(envs)
             .log(log, env).unwrap();
     } else {
-        // TODO: heap allocation instead of stack
-        /*
         target_run(bin)
-            .arg("lib/halide/apps/images/bayer_raw.png")
-            .arg("3700").arg("2.0").arg("50").arg("1.0").arg("5")
-            .arg("camera_pipe.png")
-            */
-        target_run("sh").arg("-c").arg(format!("ulimit -s 1000000 && {} lib/halide/apps/images/bayer_raw.png 3700 2.0 50 1.0 5 camera_pipe.png", bin))
-            .envs(envs)
+            .arg("lib/halide/apps/images/rgba.png")
+            .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("10")
+            .arg("harris.png")
             .log(log, env).unwrap();
     }
 }

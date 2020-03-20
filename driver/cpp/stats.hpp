@@ -46,7 +46,6 @@ TimeStats time_stats(std::vector<double>& samples) {
     };
 }
 
-/*
 #ifdef CL_TARGET_OPENCL_VERSION
 TimeStats ocl_time_stats(std::vector<cl_ulong>& samples) {
     auto to_ms = [&](cl_ulong nanoseconds) {
@@ -61,4 +60,3 @@ TimeStats ocl_time_stats(std::vector<cl_ulong>& samples) {
     };
 }
 #endif
-*/
