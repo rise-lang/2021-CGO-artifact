@@ -64,6 +64,6 @@ fn shine<W: io::Write>(env: &Env, w: &mut W) {
         .log(w, env).expect("could not setup shine repository");
 
     let rise_n_shine_path = env.lib.join("harris-rise-and-shine");
-    fs::create_dir_all(rise_n_shine_path.join("gen").join(&env.target_name))
+    fs::create_dir_all(rise_n_shine_path.join("gen"))
         .unwrap();
 }

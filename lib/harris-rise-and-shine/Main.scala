@@ -1,5 +1,6 @@
 package imgproc_rise_and_shine
 
+import apps.harrisCornerDetectionHalide.harris
 import apps.harrisCornerDetectionHalide.ocl._
 import apps.harrisCornerDetectionHalideRewrite.{ocl => rewrite}
 
@@ -11,8 +12,16 @@ object Main {
   }
 
   def main(args: Array[String]): Unit = {
-    genKernel(harrisBufferedVecUnaligned, "harris", "gen/harrisBVU.cl")
-    genKernel(harrisBufferedVecAligned, "harris", "gen/harrisBVA.cl")
-    genKernel(harrisBufferedVecUnalignedSplitPar, "harris", "gen/harrisBVUSP.cl")
+    val strip = 32
+    val vWidth = args(0).toInt
+    val highLevel = rise.core.types.infer(harris(strip, vWidth))
+    genKernel(harrisBufferedVecUnaligned(vWidth), "harris", "gen/harrisBVU.cl")
+    genKernel(harrisBufferedVecAligned(vWidth), "harris", "gen/harrisBVA.cl")
+    genKernel(harrisSplitPar(strip, vWidth, harrisBufferedVecUnaligned(vWidth)),
+      "harris", "gen/harrisBVUSP.cl")
+    genKernel(rewrite.harrisBufferedVecUnalignedSplitPar(vWidth, strip)(highLevel),
+      "harris", "gen/harrisBVUSPRW.cl")
+    genKernel(harrisSplitPar(strip, vWidth, harrisBufferedVecAligned(vWidth)),
+      "harris", "gen/harrisBVASP.cl")
   }
 }

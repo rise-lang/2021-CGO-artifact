@@ -22,7 +22,7 @@ void error_stats(T* a, T* b, int n, float tolerated_per_pixel, float tolerated_m
 
     double mse = square_sum / n;
 
-    fprintf(stderr, "%lu errors: [%.3lf - %.3lf] with %.2lf MSE\n", count, min, max, mse);
+    fprintf(stderr, "%lu errors: [%.4lf - %.4lf] with %.4lf MSE\n", count, min, max, mse);
     if (max > tolerated_per_pixel || mse > tolerated_mse) {
         fprintf(stderr, "maximum tolerated error: %.4f per pixel and %.4f MSE\n",
             tolerated_per_pixel, tolerated_mse);

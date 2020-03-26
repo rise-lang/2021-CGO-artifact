@@ -21,8 +21,8 @@ pub fn harris(env: &Env) {
 
     println!("harris, rise & shine!");
     let rise_n_shine_path = env.lib.join("harris-rise-and-shine");
-    let gen_path = rise_n_shine_path.join("gen");//.join(&env.target_name);
-    host_run("sbt").arg("run")
+    let gen_path = rise_n_shine_path.join("gen");
+    host_run("sbt").arg(format!("run {}", env.target.vector_width))
         .current_dir(&rise_n_shine_path)
         .log(log, env).expect("could not rise & shine");
 
@@ -60,14 +60,14 @@ pub fn harris(env: &Env) {
     if let Some(ref cpu_a) = env.target.cpu_affinity {
         target_run("taskset").arg("-c").arg(cpu_a).arg(bin)
             .arg("lib/halide/apps/images/rgba.png")
-            .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("10")
+            .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("20")
             .arg("harris.png")
             .envs(envs)
             .log(log, env).unwrap();
     } else {
         target_run(bin)
             .arg("lib/halide/apps/images/rgba.png")
-            .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("10")
+            .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("20")
             .arg("harris.png")
             .log(log, env).unwrap();
     }

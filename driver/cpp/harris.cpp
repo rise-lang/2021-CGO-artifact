@@ -32,17 +32,11 @@ int main(int argc, char **argv) {
     OCLExecutor ocl;
     ocl_init(&ocl, argv[2], argv[3]);
 
-    int v_width = 4;
     int timing_iterations = atoi(argv[4]);
     const char* output_path = argv[5];
 
-    if (input.width() % 4 != 0) {
-        fprintf(stderr, "input width is not dividable by vector width\n");
-        return EXIT_FAILURE;
-    }
-
-    Buffer<float> output1(input.width() - 4*v_width, input.height() - 4);
-    output1.set_min(2*v_width, 2);
+    Buffer<float> output1(input.width() - 4, input.height() - 4);
+    output1.set_min(2, 2);
     std::vector<double> sample_vec;
 
     for (int i = 0; i < timing_iterations; i++) {
@@ -72,7 +66,7 @@ int main(int argc, char **argv) {
     ////
 
     Buffer<float> output2(output1.width(), output1.height());
-    output2.set_min(2*v_width, 2);
+    output2.set_min(2, 2);
     sample_vec.clear();
 
     for (int i = 0; i < timing_iterations; i++) {
@@ -99,7 +93,7 @@ int main(int argc, char **argv) {
     ////
 
     ShineContext ctx;
-    init_context(&ocl, &ctx, output1.height(), output1.width()/v_width);
+    init_context(&ocl, &ctx, input.height(), input.width());
     std::vector<cl_ulong> ocl_sample_vec;
 
     for (int version = 0; version < SHINE_VERSIONS; version++) {
@@ -108,7 +102,7 @@ int main(int argc, char **argv) {
 
         for (int i = 0; i < timing_iterations; i++) {
             cl_event event = shine_harris(&ocl, &ctx, version,
-                output2.data(), output2.height(), output2.width()/v_width, input.data());
+                output2.data(), input.height(), input.width(), input.data());
 
             cl_ulong start, stop;
             ocl_unwrap(clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL));
