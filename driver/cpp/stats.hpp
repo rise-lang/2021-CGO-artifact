@@ -2,30 +2,33 @@
 #include <algorithm>
 #include <vector>
 
-template <typename T>
-void error_stats(T* a, T* b, int n, float tolerated_per_pixel, float tolerated_mse) {
+void error_stats(float* gold, float* other, size_t n, double tolerated_per_pixel, double required_psnr) {
     double square_sum = 0.f;
     double min = 1.f / 0.f;
     double max = 0.f;
-    uint64_t count = 0;
+    float min_g = 1.f / 0.f;
+    float max_g = -min_g;
 
     for (int i = 0; i < n; i++) {
-        double delta = (double)(a[i]) - (double)(b[i]);
+        min_g = std::min(min_g, gold[i]);
+        max_g = std::max(max_g, gold[i]);
+        double delta = (double)(gold[i]) - (double)(other[i]);
         double d_abs = std::abs(delta);
-        if (d_abs > tolerated_per_pixel) {
-            count++;
-        }
         min = std::min(min, d_abs);
         max = std::max(max, d_abs);
         square_sum += d_abs * d_abs;
     }
 
     double mse = square_sum / n;
+    double range = (double)(max_g) - (double)(min_g);
+    double psnr = 10.0 * log10((range * range) / mse);
+    min /= range;
+    max /= range;
 
-    fprintf(stderr, "%lu errors: [%.4lf - %.4lf] with %.4lf MSE\n", count, min, max, mse);
-    if (max > tolerated_per_pixel || mse > tolerated_mse) {
-        fprintf(stderr, "maximum tolerated error: %.4f per pixel and %.4f MSE\n",
-            tolerated_per_pixel, tolerated_mse);
+    fprintf(stderr, "error stats: [%.3lf - %.3lf]*(%.4lf) with %.2lf PSNR\n", min, max, range, psnr);
+    if (max > tolerated_per_pixel || psnr < required_psnr) {
+        fprintf(stderr, "maximum tolerated error of %.4f per pixel, and minimum PSNR of %.2f\n",
+            tolerated_per_pixel, required_psnr);
         exit(EXIT_FAILURE);
     }
 }

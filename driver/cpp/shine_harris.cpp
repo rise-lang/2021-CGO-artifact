@@ -1,11 +1,18 @@
-const int SHINE_VERSIONS = 5;
+const int SHINE_VERSIONS = 10;
 
 const char* SHINE_SOURCES[SHINE_VERSIONS] = {
-    "shine-gen/harrisBVU.cl",
-    "shine-gen/harrisBVA.cl",
+    //"shine-gen/harrisBVU.cl",
+    //"shine-gen/harrisBVA.cl",
     "shine-gen/harrisBVUSP.cl",
     "shine-gen/harrisBVUSPRW.cl",
+    "shine-gen/harrisBVUSP_2.cl",
+    "shine-gen/harrisBVUSPRW_2.cl",
+    "shine-gen/harrisBVUSPRW_3.cl",
     "shine-gen/harrisBVASP.cl",
+    "shine-gen/harrisBVASP_2.cl",
+    "shine-gen/harrisBVASP_3.cl",
+    "shine-gen/harrisBVASP_3_regRot_1.cl",
+    "shine-gen/harrisBVASP_3_regRot_2.cl",
 };
 
 struct ShineContext {
@@ -23,19 +30,22 @@ void init_context(OCLExecutor* ocl, ShineContext* ctx, size_t h, size_t w) {
         ocl_load_kernel("harris", SHINE_SOURCES[i], ocl, &ctx->harris[i]);
     }
 
+    // rounding up output lines to 32
+    size_t ho = (((h - 4) + 31) / 32) * 32;
+    size_t hi = ho + 4;
+
     cl_int ocl_err;
     ctx->input = clCreateBuffer(ocl->context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
-        3 * h * w * sizeof(float), NULL, &ocl_err);
+        3 * hi * w * sizeof(float), NULL, &ocl_err);
     ocl_unwrap(ocl_err);
     ctx->output = clCreateBuffer(ocl->context, CL_MEM_WRITE_ONLY | CL_MEM_HOST_READ_ONLY,
-        (h-4) * w * sizeof(float), NULL, &ocl_err);
+        ho * w * sizeof(float), NULL, &ocl_err);
     ocl_unwrap(ocl_err);
 
-    // note: allocating for worst case scenario where there is one thread per output line
-    // and 3 full lines are buffered
-    ocl_create_compute_buffer(ocl, h * 3 * w * sizeof(float), &ctx->cbuf1);
-    ocl_create_compute_buffer(ocl, h * 3 * w * sizeof(float), &ctx->cbuf2);
-    ocl_create_compute_buffer(ocl, h * 3 * w * sizeof(float), &ctx->cbuf3);
+    size_t max_threads = ho / 32;
+    ocl_create_compute_buffer(ocl, max_threads * 3 * w * sizeof(float), &ctx->cbuf1);
+    ocl_create_compute_buffer(ocl, max_threads * 3 * w * sizeof(float), &ctx->cbuf2);
+    ocl_create_compute_buffer(ocl, max_threads * 3 * w * sizeof(float), &ctx->cbuf3);
 }
 
 void destroy_context(OCLExecutor* ocl, ShineContext* ctx) {
@@ -50,35 +60,54 @@ void destroy_context(OCLExecutor* ocl, ShineContext* ctx) {
     ocl_release_mem(ctx->cbuf3);
 }
 
+void clear_context_output(
+    OCLExecutor* ocl, ShineContext* ctx, size_t h, size_t w
+) {
+    size_t ho = (((h - 4) + 31) / 32) * 32;
+    float zero = 0.0f;
+    ocl_unwrap(clEnqueueFillBuffer(ocl->queue, ctx->output, &zero, sizeof(float),
+        0, ho * w * sizeof(float), 0, NULL, NULL));
+}
+
 cl_event shine_harris(
     OCLExecutor* ocl, ShineContext* ctx, int version,
     float* output, size_t h, size_t w, const float* input
 ) {
+    // rounding up output lines to 32
+    size_t ho = (((h - 4) + 31) / 32) * 32;
+    size_t hi = ho + 4;
+
     std::vector<size_t> local_work_size = { 1 };
     std::vector<size_t> global_work_size = { 1 };
-    if (version >= 2) {
-        global_work_size = { h / 32 }; // note: or a smaller amount of threads
-    }
+    //if (version >= 2) {
+        global_work_size = { ho / 32 };
+    //}
 
     ocl_set_kernel_args(ctx->harris[version], {
-        ocl_data<cl_mem>(ctx->output), ocl_data<cl_int>(h - 4), ocl_data<cl_int>(w), ocl_data<cl_mem>(ctx->input),
+        ocl_data<cl_mem>(ctx->output), ocl_data<cl_int>(ho), ocl_data<cl_int>(w), ocl_data<cl_mem>(ctx->input),
         ocl_data<cl_mem>(ctx->cbuf3), ocl_data<cl_mem>(ctx->cbuf2), ocl_data<cl_mem>(ctx->cbuf1)
     });
 
-    ocl_unwrap(clEnqueueWriteBuffer(ocl->queue, ctx->input, false, 0,
-        3 * h * w * sizeof(float), input, 0, NULL, NULL));
+    size_t origin[3] = { 0 };
+    {
+        size_t region[3] = { w * sizeof(float), h, 3 };
+        size_t buffer_slice_pitch = hi * w * sizeof(float);
+        size_t host_slice_pitch = h * w * sizeof(float);
+        ocl_unwrap(clEnqueueWriteBufferRect(ocl->queue, ctx->input, false,
+            origin, origin, region,
+            0, buffer_slice_pitch, 0, host_slice_pitch,
+            input, 0, NULL, NULL));
+    }
     cl_event ev = ocl_enqueue_kernel(ocl, &ctx->harris[version], global_work_size, local_work_size);
-
-    size_t buffer_origin[3] = { 0 };
-    size_t host_origin[3] = { 0 };
-    size_t region[3] = { (w-4) * sizeof(float), (h-4), 1 };
-    size_t buffer_row_pitch = w * sizeof(float);
-    size_t host_row_pitch = (w-4) * sizeof(float);
-    ocl_unwrap(clEnqueueReadBufferRect(ocl->queue, ctx->output, false,
-        buffer_origin, host_origin, region,
-        buffer_row_pitch, 0, host_row_pitch, 0,
-        output, 0, NULL, NULL));
+    {
+        size_t region[3] = { (w-4) * sizeof(float), (h-4), 1 };
+        size_t buffer_row_pitch = w * sizeof(float);
+        size_t host_row_pitch = (w-4) * sizeof(float);
+        ocl_unwrap(clEnqueueReadBufferRect(ocl->queue, ctx->output, false,
+            origin, origin, region,
+            buffer_row_pitch, 0, host_row_pitch, 0,
+            output, 0, NULL, NULL));
+    }
     ocl_unwrap(clFinish(ocl->queue));
-
     return ev;
 }

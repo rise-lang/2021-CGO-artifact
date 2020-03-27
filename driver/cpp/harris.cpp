@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
     TimeStats t_stats2 = time_stats(sample_vec);
     printf("halide auto: %.2lf [%.2lf ; %.2lf]\n", t_stats2.median_ms, t_stats2.min_ms, t_stats2.max_ms);
 
-    error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 0.001);
+    error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
 
     ////
 
@@ -97,8 +97,10 @@ int main(int argc, char **argv) {
     std::vector<cl_ulong> ocl_sample_vec;
 
     for (int version = 0; version < SHINE_VERSIONS; version++) {
-        output2.fill(0);
         ocl_sample_vec.clear();
+        // wipe out any previous results for correctness check
+        output2.fill(0);
+        clear_context_output(&ocl, &ctx, input.height(), input.width());
 
         for (int i = 0; i < timing_iterations; i++) {
             cl_event event = shine_harris(&ocl, &ctx, version,
@@ -113,7 +115,7 @@ int main(int argc, char **argv) {
         TimeStats t_stats3 = ocl_time_stats(ocl_sample_vec);
         printf("%s: %.2lf [%.2lf ; %.2lf]\n", SHINE_SOURCES[version],
             t_stats3.median_ms, t_stats3.min_ms, t_stats3.max_ms);
-        error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 0.001);
+        error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
     }
 
     destroy_context(&ocl, &ctx);
