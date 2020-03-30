@@ -1,4 +1,4 @@
-const int SHINE_VERSIONS = 10;
+const int SHINE_VERSIONS = 11;
 
 const char* SHINE_SOURCES[SHINE_VERSIONS] = {
     //"shine-gen/harrisBVU.cl",
@@ -11,6 +11,7 @@ const char* SHINE_SOURCES[SHINE_VERSIONS] = {
     "shine-gen/harrisBVASP.cl",
     "shine-gen/harrisBVASP_2.cl",
     "shine-gen/harrisBVASP_3.cl",
+    "shine-gen/harrisBVASPRR.cl",
     "shine-gen/harrisBVASP_3_regRot_1.cl",
     "shine-gen/harrisBVASP_3_regRot_2.cl",
 };

@@ -23,5 +23,7 @@ object Main {
       "harris", "gen/harrisBVUSPRW.cl")
     genKernel(harrisSplitPar(strip, vWidth, harrisBufferedVecAligned(vWidth)),
       "harris", "gen/harrisBVASP.cl")
+    genKernel(harrisSplitPar(strip, vWidth, harrisBufferedRegRotVecAligned(vWidth)),
+      "harris", "gen/harrisBVASPRR.cl")
   }
 }
