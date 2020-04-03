@@ -1,4 +1,4 @@
-const int SHINE_VERSIONS = 11;
+const int SHINE_VERSIONS = 13;
 
 const char* SHINE_SOURCES[SHINE_VERSIONS] = {
     //"shine-gen/harrisBVU.cl",
@@ -6,15 +6,16 @@ const char* SHINE_SOURCES[SHINE_VERSIONS] = {
     "shine-gen/harrisB3VUSP.cl",
     "shine-gen/harrisB3VUSPRW.cl",
     "shine-gen/harrisB3VASP.cl",
+    "shine-gen/harrisB3VASPRW.cl",
     "shine-gen/harrisB3VASPRR.cl",
+    "shine-gen/harrisB3VASPRRRW.cl",
     "shine-gen/harrisB4VUSP.cl",
-    //"shine-gen/harrisB4VUSPRW.cl",
     "shine-gen/harrisB4VASP.cl",
     "shine-gen/harrisB4VASPRR.cl",
-    "shine-gen/harrisBVUSP_2.cl",
-    "shine-gen/harrisBVUSPRW_3.cl",
-    "shine-gen/harrisBVASP_3.cl",
-    "shine-gen/harrisBVASP_3_regRot_2.cl",
+    "shine-gen/harrisB3VUSP_tweaked.cl",
+    "shine-gen/harrisB3VUSPRW_tweaked.cl",
+    "shine-gen/harrisB3VASP_tweaked.cl",
+    "shine-gen/harrisB3VASP_tweakedRR.cl",
 };
 
 struct ShineContext {

@@ -31,6 +31,7 @@ pub fn environment<F>(use_env: F) where F: FnOnce(&Env) {
     let log = &mut fs::File::create(path).unwrap();
 
     command::setup(&env);
+
     halide(&env, log);
     shine(&env, log);
 
