@@ -92,10 +92,21 @@ Software used:
 - OpenCL implementation for the Mali GPU. Helpful pages:
   - <https://www.cnx-software.com/2018/05/13/how-to-get-started-with-opencl-on-odroid-xu4-board-with-arm-mali-t628mp6-gpu/>
   - <https://magazine.odroid.com/article/clinfo-compiling-the-essential-opencl-gpu-tuning-utility-for-the-odroid-xu4/>
-  
+ 
+## Odroid N2 with ARM processors
+
+Configuration files:
+- `cortex-a53.yaml`
+- `cortex-a73.yaml`
+
+Software used:
+- clang 10 from LLVM 10. Built from source. (can also use gcc 7.4)
+- [POCL](portablecl.org) OpenCL implementation for the CPUs. Built from source along with LLVM 10.
+
 ### ARM CPUs frequency
 
-When benchmarking the ARM CPUs of the Odroid, we set their frequency to the maximum using the scripts:
+When benchmarking the ARM CPUs, we set their frequency using scripts such as (Odroid XU4):
+**TODO: put the files in the repository instead of the README?**
 
 ```sh
 odroid@odroid:~$ cat ./perf_on_a15 
