@@ -9,10 +9,11 @@ data <- read_delim(input, " ")
 data <- data %>%
   group_by(processor) %>%
   mutate(speedup = median_ms[1]/median_ms) %>%
-  transform(processor = factor(processor, levels=c("cortex-a7", "cortex-a15", "cortex-a53", "cortex-a73")))
+  transform(processor = factor(processor, levels=c("cortex-a7", "cortex-a15", "cortex-a53", "cortex-a73")),
+            variant = factor(variant, levels=rev(c("halide", "rise unaligned loads", "rise aligned loads", "rise register rotation"))))
 
 g <- ggplot(data, aes(x=variant, y=speedup, fill=generator)) +
-  xlab("variant") +
+  # xlab("variant") +
   scale_y_continuous(name="median speedup (log scale)",
                      trans="log2", breaks = seq(0, 2, by=0.1)) +
   geom_bar(colour = "black", show.legend = FALSE, stat = "identity") +
@@ -21,4 +22,4 @@ g <- ggplot(data, aes(x=variant, y=speedup, fill=generator)) +
   coord_flip() +
   theme_bw() + theme(legend.title = element_blank()) +
   scale_fill_manual(values = c("#5e3c99", "#e66101"))
-ggsave(output, plot = g, width = 16, height = 8, units = "cm")
+ggsave(output, plot = g, width = 10, height = 6, units = "cm")
