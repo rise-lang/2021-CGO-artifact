@@ -60,15 +60,15 @@ pub fn harris(env: &Env) {
     };
     let output = if let Some(ref cpu_a) = env.target.cpu_affinity {
         target_run("taskset").arg("-c").arg(cpu_a).arg(bin)
-            .arg("lib/halide/apps/images/rgba.png")
-            .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("10")
+            .arg("lib/halide/apps/images/rgb.png")
+            .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("20")
             .arg("harris.png")
             .envs(envs)
             .log(log, env).unwrap()
     } else {
         target_run(bin)
-            .arg("lib/halide/apps/images/rgba.png")
-            .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("10")
+            .arg("lib/halide/apps/images/rgb.png")
+            .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("20")
             .arg("harris.png")
             .log(log, env).unwrap()
     };

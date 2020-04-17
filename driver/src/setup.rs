@@ -55,7 +55,7 @@ fn halide<W: io::Write>(env: &Env, w: &mut W) {
         .log(w, env).expect("could not upload Halide headers");
     upload_file(&halide_path.join("tools").join("halide_image_io.h"))
         .log(w, env).expect("could not upload Halide headers");
-    upload_file(&halide_path.join("apps").join("images").join("rgba.png"))
+    upload_file(&halide_path.join("apps").join("images").join("rgb.png"))
         .log(w, env).expect("could not upload Halide images");
 }
 

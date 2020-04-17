@@ -10,16 +10,25 @@ data <- data %>%
   group_by(processor) %>%
   mutate(speedup = median_ms[1]/median_ms) %>%
   transform(processor = factor(processor, levels=c("cortex-a7", "cortex-a15", "cortex-a53", "cortex-a73")),
-            variant = factor(variant, levels=rev(c("halide", "rise unaligned loads", "rise aligned loads", "rise register rotation"))))
+            variant = factor(variant, levels=c("reference", "u-loads", "a-loads", "reg-rot")))
+
+start <- 0.4
+t_shift <- scales::trans_new("shift",
+                             transform = function(x) { log2(x+(1-start)) },
+                             inverse = function(x) { (2^x)-(1-start) })
 
 g <- ggplot(data, aes(x=variant, y=speedup, fill=generator)) +
   # xlab("variant") +
   scale_y_continuous(name="median speedup (log scale)",
-                     trans="log2", breaks = seq(0, 2, by=0.1)) +
-  geom_bar(colour = "black", show.legend = FALSE, stat = "identity") +
+                     trans=t_shift, breaks = seq(start, 2, by=0.2),
+                     limits = c(start, 2)) +
+  geom_col(colour = "black") + # show.legend = FALSE,
   geom_hline(yintercept = 1) +
-  facet_wrap(~processor, scales="free_x") + # scale, nrow
-  coord_flip() +
-  theme_bw() + theme(legend.title = element_blank()) +
-  scale_fill_manual(values = c("#5e3c99", "#e66101"))
-ggsave(output, plot = g, width = 10, height = 6, units = "cm")
+  facet_wrap(~processor, scales="free_y", nrow=1) + # nrow
+  # coord_flip() +
+  theme_bw() + theme(
+    legend.title = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust=1)
+  ) +
+  scale_fill_manual(values = c("#882255", "#117733"))
+ggsave(output, plot = g, width = 24, height = 8, units = "cm")

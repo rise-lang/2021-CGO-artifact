@@ -1,17 +1,17 @@
 processor generator variant median_ms
-cortex-a7 halide halide 171.44
-cortex-a7 rise "rise unaligned loads" 156.05
-cortex-a7 rise "rise aligned loads" 153.92
-cortex-a7 rise "rise register rotation" 119.65
-cortex-a15 halide halide 47.29
-cortex-a15 rise "rise unaligned loads" 43.43
-cortex-a15 rise "rise aligned loads" 41.25
-cortex-a15 rise "rise register rotation" 37.61
-cortex-a53 halide halide 80.49
-cortex-a53 rise "rise unaligned loads" 78.35
-cortex-a53 rise "rise aligned loads" 78.31
-cortex-a53 rise "rise register rotation" 61.22
-cortex-a73 halide halide 17.65
-cortex-a73 rise "rise unaligned loads" 25.24
-cortex-a73 rise "rise aligned loads" 23.63
-cortex-a73 rise "rise register rotation" 16.84
+cortex-a7 halide reference 171.44
+cortex-a7 rise u-loads 156.05
+cortex-a7 rise a-loads 153.92
+cortex-a7 rise reg-rot 119.65
+cortex-a15 halide reference 47.29
+cortex-a15 rise u-loads 43.43
+cortex-a15 rise a-loads 41.25
+cortex-a15 rise reg-rot 37.61
+cortex-a53 halide reference 80.49
+cortex-a53 rise u-loads 78.35
+cortex-a53 rise a-loads 78.31
+cortex-a53 rise reg-rot 61.22
+cortex-a73 halide reference 17.65
+cortex-a73 rise u-loads 25.24
+cortex-a73 rise a-loads 23.63
+cortex-a73 rise reg-rot 16.84
