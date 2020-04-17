@@ -19,7 +19,7 @@ t_shift <- scales::trans_new("shift",
 
 g <- ggplot(data, aes(x=variant, y=speedup, fill=generator)) +
   # xlab("variant") +
-  scale_y_continuous(name="median speedup (log scale)",
+  scale_y_continuous(name="median speedup (log)",
                      trans=t_shift, breaks = seq(start, 2, by=0.2),
                      limits = c(start, 2)) +
   geom_col(colour = "black") + # show.legend = FALSE,
@@ -28,7 +28,10 @@ g <- ggplot(data, aes(x=variant, y=speedup, fill=generator)) +
   # coord_flip() +
   theme_bw() + theme(
     legend.title = element_blank(),
-    axis.text.x = element_text(angle = 45, hjust=1)
+    axis.text.x = element_text(angle = 45, hjust=1),
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(margin = margin(t = 0, r = 15, b = 0, l = 0)),
+    text = element_text(size=12, family="DejaVu Sans")
   ) +
   scale_fill_manual(values = c("#882255", "#117733"))
 ggsave(output, plot = g, width = 24, height = 8, units = "cm")

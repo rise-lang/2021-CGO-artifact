@@ -8,3 +8,5 @@ usePackage <- function(p) {
 }
 
 usePackage("tidyverse")
+usePackage("extrafont")
+#font_import(prompt=FALSE)
