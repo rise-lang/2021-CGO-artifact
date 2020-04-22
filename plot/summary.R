@@ -12,16 +12,21 @@ data <- data %>%
   transform(processor = factor(processor, levels=c("cortex-a7", "cortex-a15", "cortex-a53", "cortex-a73")),
             variant = factor(variant, levels=c("reference", "u-loads", "a-loads", "reg-rot")))
 
-start <- 0.4
+print(data)
+
+start <- 0.5
+off <- 2*start
 t_shift <- scales::trans_new("shift",
-                             transform = function(x) { log2(x+(1-start)) },
-                             inverse = function(x) { (2^x)-(1-start) })
+                             transform = function(x) { ifelse(x <= 1, 2*x, 1+x)-off },
+                             inverse = function(x) { ifelse((x+off) <= 2, (x+off)/2, (x+off)-1) })
+                             #transform = function(x) { log2(x)-log2(1-start) },
+                             #inverse = function(x) { (2^x)*(1-start) })
 
 g <- ggplot(data, aes(x=variant, y=speedup, fill=generator)) +
   # xlab("variant") +
-  scale_y_continuous(name="median speedup (log)",
-                     trans=t_shift, breaks = seq(start, 2, by=0.2),
-                     limits = c(start, 2)) +
+  scale_y_continuous(name="median speedup",
+                     trans=t_shift, breaks = c(0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.2, 1.4, 1.6, 1.8, 2.0),
+                     limits = c(0.5, 2)) +
   geom_col(colour = "black") + # show.legend = FALSE,
   geom_hline(yintercept = 1) +
   facet_wrap(~processor, scales="free_y", nrow=1) + # nrow
