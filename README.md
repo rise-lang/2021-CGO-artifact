@@ -27,6 +27,7 @@ We will refer to this directory as `$HOST`.
 - libpng and libjpeg
 - OpenCL 1.2+ (recommended: check your setup with `clinfo`)
 - a C/C++ compiler with C++14 support
+- OpenCV 4.3
 
 ## Running the Experiment
 
@@ -92,6 +93,18 @@ Software used:
 - OpenCL implementation for the Mali GPU. Helpful pages:
   - <https://www.cnx-software.com/2018/05/13/how-to-get-started-with-opencl-on-odroid-xu4-board-with-arm-mali-t628mp6-gpu/>
   - <https://magazine.odroid.com/article/clinfo-compiling-the-essential-opencl-gpu-tuning-utility-for-the-odroid-xu4/>
+- [OpenCV](https://opencv.org/) 4.3.0 built from source.
+```
+cmake -D CMAKE_BUILD_TYPE=RELEASE \
+  -D CMAKE_INSTALL_PREFIX=/usr/local \
+  -D ENABLE_NEON=ON \
+  -D ENABLE_VFPV3=ON \
+  -D WITH_OPENCL=ON \
+  -D WITH_JASPER=OFF \
+  -D BUILD_TESTS=OFF \
+  -D INSTALL_PYTHON_EXAMPLES=OFF \
+  -D BUILD_EXAMPLES=OFF ..
+```
  
 ## Odroid N2 with ARM processors
 
@@ -102,6 +115,17 @@ Configuration files:
 Software used:
 - clang 10 from LLVM 10. Built from source. (can also use gcc 7.4)
 - [POCL](portablecl.org) OpenCL implementation for the CPUs. Built from source along with LLVM 10.
+- [OpenCV](https://opencv.org/) 4.3.0 built from source.
+```
+cmake -D CMAKE_BUILD_TYPE=RELEASE \
+  -D CMAKE_INSTALL_PREFIX=/usr/local \
+  -D ENABLE_NEON=ON \
+  -D WITH_OPENCL=ON \
+  -D WITH_JASPER=OFF \
+  -D BUILD_TESTS=OFF \
+  -D INSTALL_PYTHON_EXAMPLES=OFF \
+  -D BUILD_EXAMPLES=OFF ..
+```
 
 ### ARM CPUs frequency
 

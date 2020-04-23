@@ -1,21 +1,26 @@
-const int SHINE_VERSIONS = 13;
+const int SHINE_VERSIONS = 3;
 
 const char* SHINE_SOURCES[SHINE_VERSIONS] = {
     //"shine-gen/harrisBVU.cl",
     //"shine-gen/harrisBVA.cl",
-    "shine-gen/harrisB3VUSP.cl",
+    //"shine-gen/harrisB3VUSP.cl",
     "shine-gen/harrisB3VUSPRW.cl",
-    "shine-gen/harrisB3VASP.cl",
+    //"shine-gen/harrisB3VASP.cl",
     "shine-gen/harrisB3VASPRW.cl",
-    "shine-gen/harrisB3VASPRR.cl",
+    //"shine-gen/harrisB3VASPRR.cl",
     "shine-gen/harrisB3VASPRRRW.cl",
-    "shine-gen/harrisB4VUSP.cl",
-    "shine-gen/harrisB4VASP.cl",
-    "shine-gen/harrisB4VASPRR.cl",
-    "shine-gen/harrisB3VUSP_tweaked.cl",
-    "shine-gen/harrisB3VUSPRW_tweaked.cl",
-    "shine-gen/harrisB3VASP_tweaked.cl",
-    "shine-gen/harrisB3VASP_tweakedRR.cl",
+    //"shine-gen/harrisB4VUSP.cl",
+    //"shine-gen/harrisB4VASP.cl",
+    //"shine-gen/harrisB4VASPRR.cl",
+    //"shine-gen/harrisB3VUSP_tweaked.cl",
+    //"shine-gen/harrisB3VUSPRW_tweaked.cl",
+    //"shine-gen/harrisB3VASP_tweaked.cl",
+    //"shine-gen/harrisB3VASP_tweaked2.cl",
+    //"shine-gen/harrisB3VASP_tweaked3.cl",
+    //"shine-gen/harrisB3VASP_tweaked4.cl",
+    //"shine-gen/harrisB3VASP_tweakRed.cl",
+    //"shine-gen/harrisB3VASP_tweakRed2.cl",
+    //"shine-gen/harrisB3VASP_tweakedRR.cl",
 };
 
 struct ShineContext {
@@ -30,6 +35,7 @@ struct ShineContext {
 
 void init_context(OCLExecutor* ocl, ShineContext* ctx, size_t h, size_t w) {
     for (int i = 0; i < SHINE_VERSIONS; i++) {
+        fprintf(stderr, "loading kernel %s\n", SHINE_SOURCES[i]);
         ocl_load_kernel("harris", SHINE_SOURCES[i], ocl, &ctx->harris[i]);
     }
 

@@ -4,6 +4,7 @@
 
 #include "ocl.cpp"
 #include "shine_harris.cpp"
+#include "harrisNeon.hpp"
 
 #include "time.hpp"
 #include "stats.hpp"
@@ -16,6 +17,9 @@
 
 using namespace Halide::Runtime;
 using namespace Halide::Tools;
+
+#include <opencv2/imgproc.hpp>
+#include <opencv2/core/ocl.hpp>
 
 int main(int argc, char **argv) {
     if (argc != 6) {
@@ -120,5 +124,102 @@ int main(int argc, char **argv) {
 
     destroy_context(&ocl, &ctx);
     ocl_release(&ocl);
+
+    ////
+
+    output2.fill(0);
+    sample_vec.clear();
+
+    // rounding up output lines to 32
+    size_t h = input.height();
+    size_t w = input.width();
+    size_t ho = (((h - 4) + 31) / 32) * 32;
+    size_t hi = ho + 4;
+    size_t max_threads = ho / 32;
+    size_t max_cbuf_size = 4 * (w + 8) * sizeof(float);
+
+    float* inputBis = (float*) malloc(3 * hi * w * sizeof(float));
+    float* outputBis = (float*) malloc(ho * w * sizeof(float));
+    float* cbuf1 = (float*) malloc(max_threads * max_cbuf_size);
+    float* cbuf2 = (float*) malloc(max_threads * max_cbuf_size);
+    float* cbuf3 = (float*) malloc(max_threads * max_cbuf_size);
+
+    for (int c = 0; c < 3; c++) {
+      for (int y = 0; y < input.height(); y++) {
+        for (int x = 0; x < input.width(); x++) {
+          int i = ((c * input.height() + y) * input.width()) + x;
+          int iBis = ((c * hi + y) * input.width()) + x;
+          inputBis[iBis] = input.data()[i];
+        }
+      }
+    }
+
+    for (int i = 0; i < timing_iterations; i++) {
+        auto start = Clock::now();
+        harrisB3VUSP(outputBis, ho, w, inputBis, cbuf3, cbuf2, cbuf1);
+        auto stop = Clock::now();
+
+        sample_vec.push_back(std::chrono::duration<double, std::milli>(stop - start).count());
+    }
+
+    for (int y = 0; y < output2.height(); y++) {
+      for (int x = 0; x < output2.width(); x++) {
+        int i = (y * output2.width()) + x;
+        int iBis = (y * (output2.width() + 4)) + x;
+        output2.data()[i] = outputBis[iBis];
+      }
+    }
+
+    free(inputBis);
+    free(outputBis);
+    free(cbuf1);
+    free(cbuf2);
+    free(cbuf3);
+
+    TimeStats t_stats4 = time_stats(sample_vec);
+    printf("harrisB3VUSP NEON: %.2lf [%.2lf ; %.2lf]\n", t_stats4.median_ms, t_stats4.min_ms, t_stats4.max_ms);
+
+    error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
+
+    ////
+
+    output2.fill(0);
+    sample_vec.clear();
+    cv::ocl::setUseOpenCL(false);
+
+    cv::Mat cv_in(h, w, CV_32FC3);
+    cv::Mat cv_gray(h, w, CV_32F);
+    cv::Mat cv_out(h, w, CV_32F);
+
+    for (int c = 0; c < 3; c++) {
+      for (int y = 0; y < input.height(); y++) {
+        for (int x = 0; x < input.width(); x++) {
+          int i = ((c * input.height() + y) * input.width()) + x;
+          cv_in.at<cv::Vec3f>(y, x)[c] = input.data()[i];
+        }
+      }
+    }
+
+    for (int i = 0; i < timing_iterations; i++) {
+        auto start = Clock::now();
+        cv::cvtColor(cv_in, cv_gray, cv::COLOR_RGB2GRAY);
+        cv::cornerHarris(cv_gray, cv_out, 3, 3, 0.04, cv::BORDER_ISOLATED);
+        auto stop = Clock::now();
+
+        sample_vec.push_back(std::chrono::duration<double, std::milli>(stop - start).count());
+    }
+
+    for (int y = 0; y < output2.height(); y++) {
+      for (int x = 0; x < output2.width(); x++) {
+        int i = (y * output2.width()) + x;
+        output2.data()[i] = cv_out.at<float>(y + 2, x + 2);
+      }
+    }
+
+    TimeStats t_stats5 = time_stats(sample_vec);
+    printf("OpenCV: %.2lf [%.2lf ; %.2lf]\n", t_stats5.median_ms, t_stats5.min_ms, t_stats5.max_ms);
+
+    error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
+
     return EXIT_SUCCESS;
 }

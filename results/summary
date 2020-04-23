@@ -1,17 +1,21 @@
 processor generator variant median_ms
-cortex-a7 halide reference 171.44
-cortex-a7 rise u-loads 156.05
-cortex-a7 rise a-loads 153.92
-cortex-a7 rise reg-rot 119.65
-cortex-a15 halide reference 47.29
-cortex-a15 rise u-loads 43.43
-cortex-a15 rise a-loads 41.25
-cortex-a15 rise reg-rot 37.61
-cortex-a53 halide reference 80.49
-cortex-a53 rise u-loads 78.35
-cortex-a53 rise a-loads 78.31
-cortex-a53 rise reg-rot 61.22
-cortex-a73 halide reference 17.65
-cortex-a73 rise u-loads 25.24
-cortex-a73 rise a-loads 23.63
-cortex-a73 rise reg-rot 16.84
+"Cortex A7" OpenCV baseline 1474.6
+"Cortex A7" Halide target 171.4
+"Cortex A7" Rise u-loads 160.8
+"Cortex A7" Rise a-loads 149.6
+"Cortex A7" Rise reg-rot 116.4
+"Cortex A15" OpenCV baseline 607.6
+"Cortex A15" Halide target 47.3
+"Cortex A15" Rise u-loads 44.5
+"Cortex A15" Rise a-loads 42.3
+"Cortex A15" Rise reg-rot 36.4
+"Cortex A53" OpenCV baseline 395.2
+"Cortex A53" Halide target 82.8
+"Cortex A53" Rise u-loads 80.6
+"Cortex A53" Rise a-loads 80.8
+"Cortex A53" Rise reg-rot 63.1
+"Cortex A73" OpenCV baseline 166.7
+"Cortex A73" Halide target 17
+"Cortex A73" Rise u-loads 26
+"Cortex A73" Rise a-loads 24
+"Cortex A73" Rise reg-rot 16.8

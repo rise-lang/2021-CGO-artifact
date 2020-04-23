@@ -22,13 +22,36 @@ pub fn harris(env: &Env) {
     println!("harris, rise & shine!");
     let rise_n_shine_path = env.lib.join("harris-rise-and-shine");
     let gen_path = rise_n_shine_path.join("gen");
-
+/*
     host_run("sbt").arg(format!("run {}", env.target.vector_width))
         .current_dir(&rise_n_shine_path)
         .log(log, env).expect("could not rise & shine");
-
+*/
     upload_file_to(&gen_path, "shine-gen")
         .log(log, env).unwrap();
+
+    let obj1 = &format!("{}/harrisB3VUSP.o", env.remote_bin);
+    let mut cmd1 = &mut target_run("clang");//&env.target.remote_cc)
+    cmd1.arg("-c")
+        .arg("src/harrisB3VUSP.c")
+        .arg("-I").arg("src")
+        .arg("-no-pie")
+        .arg("-fdiagnostics-color")
+        .arg("-Ofast")
+        //.arg("-target").arg("arm-linux-gnueabihf")
+        .arg(format!("-mcpu={}", env.target_name));
+    cmd1 = if (env.target_name == "cortex-a7" || env.target_name == "cortex-a15") {
+        cmd1.arg("-mfpu=neon-vfpv4").arg("-mfloat-abi=hard")
+    } else {
+        cmd1
+    };
+    if cmd1
+        .arg("-fopenmp")
+        .arg("-o").arg(obj1)
+        .log(log, env).is_none()
+    {
+        return;
+    }
 
     let bin = &format!("{}/harris", env.remote_bin);
     if target_run(&env.target.remote_cc)
@@ -36,15 +59,18 @@ pub fn harris(env: &Env) {
         .arg("halide-gen/harris.a")
         .arg("halide-gen/harris_auto_schedule.a")
         .arg("halide-gen/runtime.a")
+        .arg(obj1)
         .arg("-I").arg("src")
         .arg("-I").arg("halide-gen")
         .arg("-I").arg("lib/halide/include")
         .arg("-I").arg("lib/halide/tools")
+        .arg("-I").arg("/usr/local/include/opencv4")
         .arg("-no-pie")
         .arg("-fdiagnostics-color")
         .arg("-O2").arg("-lstdc++").arg("-std=c++14")
         .arg("-lm").arg("-lpthread").arg("-ldl").arg("-lpng").arg("-ljpeg")
-        .arg("-lOpenCL")
+        .arg("-lOpenCL").arg("-fopenmp")
+        .arg("-lopencv_core").arg("-lopencv_imgproc")
         .arg("-o").arg(bin)
         .log(log, env).is_none()
     {
@@ -61,14 +87,14 @@ pub fn harris(env: &Env) {
     let output = if let Some(ref cpu_a) = env.target.cpu_affinity {
         target_run("taskset").arg("-c").arg(cpu_a).arg(bin)
             .arg("lib/halide/apps/images/rgb.png")
-            .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("20")
+            .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("30")
             .arg("harris.png")
             .envs(envs)
             .log(log, env).unwrap()
     } else {
         target_run(bin)
             .arg("lib/halide/apps/images/rgb.png")
-            .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("20")
+            .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("30")
             .arg("harris.png")
             .log(log, env).unwrap()
     };
