@@ -35,5 +35,12 @@ object Main {
       "harris", "gen/harrisB4VASPRR.cl")
     genKernel(rewrite.harrisBufferedRegRotVecAlignedSplitPar(vWidth, strip)(highLevel),
       "harris", "gen/harrisB3VASPRRRW.cl")
+
+    genKernel(grayPar, "gray", "gen/grayP.cl")
+    genKernel(sobelXPar, "sobelX", "gen/sobelXP.cl")
+    genKernel(sobelYPar, "sobelY", "gen/sobelYP.cl")
+    genKernel(mulPar, "mul", "gen/mulP.cl")
+    genKernel(sum3x3Par, "sum3x3", "gen/sum3x3P.cl")
+    genKernel(coarsityPadPar, "coarsity", "gen/coarsityP.cl")
   }
 }

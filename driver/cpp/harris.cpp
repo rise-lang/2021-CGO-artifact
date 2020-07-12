@@ -4,6 +4,7 @@
 
 #include "ocl.cpp"
 #include "shine_harris.cpp"
+#include "shine_harris_fission.cpp"
 #include "harrisNeon.hpp"
 
 #include "time.hpp"
@@ -65,7 +66,7 @@ int main(int argc, char **argv) {
     }
 
     TimeStats t_stats1 = time_stats(sample_vec);
-    printf("halide manual: %.2lf [%.2lf ; %.2lf]\n", t_stats1.median_ms, t_stats1.min_ms, t_stats1.max_ms);
+    printf("halide manual: %.2lf [%.2lf ; %.2lf] ms\n", t_stats1.median_ms, t_stats1.min_ms, t_stats1.max_ms);
 
     ////
 
@@ -90,7 +91,7 @@ int main(int argc, char **argv) {
     output2.copy_to_host();
 
     TimeStats t_stats2 = time_stats(sample_vec);
-    printf("halide auto: %.2lf [%.2lf ; %.2lf]\n", t_stats2.median_ms, t_stats2.min_ms, t_stats2.max_ms);
+    printf("halide auto: %.2lf [%.2lf ; %.2lf] ms\n", t_stats2.median_ms, t_stats2.min_ms, t_stats2.max_ms);
 
     error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
 
@@ -117,12 +118,41 @@ int main(int argc, char **argv) {
         }
 
         TimeStats t_stats3 = ocl_time_stats(ocl_sample_vec);
-        printf("%s: %.2lf [%.2lf ; %.2lf]\n", SHINE_SOURCES[version],
+        printf("%s: %.2lf [%.2lf ; %.2lf] ms\n", SHINE_SOURCES[version],
             t_stats3.median_ms, t_stats3.min_ms, t_stats3.max_ms);
         error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
     }
 
     destroy_context(&ocl, &ctx);
+
+    ////
+
+    ocl_sample_vec.clear();
+    // wipe out any previous results for correctness check
+    output2.fill(0);
+
+    ShineFissionContext fiss_ctx;
+    init_fission_context(&ocl, &fiss_ctx, input.height(), input.width());
+
+    for (int i = 0; i < timing_iterations; i++) {
+        auto events = shine_harris_fission(&ocl, &fiss_ctx,
+        output2.data(), input.height(), input.width(), input.data());
+
+        cl_ulong start, stop;
+        ocl_unwrap(clGetEventProfilingInfo(events.first, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL));
+        ocl_unwrap(clGetEventProfilingInfo(events.second, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &stop, NULL));
+        ocl_sample_vec.push_back(stop - start);
+    }
+
+    TimeStats t_stats3 = ocl_time_stats(ocl_sample_vec);
+    printf("shine fission: %.2lf [%.2lf ; %.2lf] ms\n",
+        t_stats3.median_ms, t_stats3.min_ms, t_stats3.max_ms);
+    error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
+
+    destroy_fission_context(&ocl, &fiss_ctx);
+
+    ////
+
     ocl_release(&ocl);
 
     ////
@@ -177,7 +207,7 @@ int main(int argc, char **argv) {
     free(cbuf3);
 
     TimeStats t_stats4 = time_stats(sample_vec);
-    printf("harrisB3VUSP NEON: %.2lf [%.2lf ; %.2lf]\n", t_stats4.median_ms, t_stats4.min_ms, t_stats4.max_ms);
+    printf("harrisB3VUSP NEON: %.2lf [%.2lf ; %.2lf] ms\n", t_stats4.median_ms, t_stats4.min_ms, t_stats4.max_ms);
 
     error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
 
@@ -217,7 +247,7 @@ int main(int argc, char **argv) {
     }
 
     TimeStats t_stats5 = time_stats(sample_vec);
-    printf("OpenCV: %.2lf [%.2lf ; %.2lf]\n", t_stats5.median_ms, t_stats5.min_ms, t_stats5.max_ms);
+    printf("OpenCV: %.2lf [%.2lf ; %.2lf] ms\n", t_stats5.median_ms, t_stats5.min_ms, t_stats5.max_ms);
 
     error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
 
