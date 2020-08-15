@@ -45,6 +45,7 @@ pub fn environment<F>(use_env: F) where F: FnOnce(&Env) {
 
 fn halide<W: io::Write>(env: &Env, w: &mut W) {
     let halide_path = env.lib.join("halide");
+    let polymage_path = env.lib.join("polymage");
     host_run("make")
         .current_dir(&halide_path)
         .log(w, env).expect("could not build Halide");
@@ -57,6 +58,9 @@ fn halide<W: io::Write>(env: &Env, w: &mut W) {
         .log(w, env).expect("could not upload Halide headers");
     upload_file(&halide_path.join("apps").join("images").join("rgb.png"))
         .log(w, env).expect("could not upload Halide images");
+
+    upload_file(&polymage_path.join("images").join("venice_wikimedia.jpg"))
+        .log(w, env).expect("could not upload Polymage images");
 }
 
 fn shine<W: io::Write>(env: &Env, w: &mut W) {

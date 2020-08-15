@@ -1,0 +1,31 @@
+processor generator variant median_ms
+"Cortex A7" OpenCV opencv 6595.32
+"Cortex A7" Halide halide 726.79
+"Cortex A7" Rise u-loads 675.61
+"Cortex A7" Rise a-loads 653.65
+"Cortex A7" Rise reg-rot 571.11
+"Cortex A7" Lift lift 1463.14
+"Cortex A15" OpenCV opencv 1649.80
+"Cortex A15" Halide halide 173.45
+"Cortex A15" Rise u-loads 152.17
+"Cortex A15" Rise a-loads 142.65
+"Cortex A15" Rise reg-rot 129.46
+"Cortex A15" Lift lift 549.14
+"Cortex A53" OpenCV opencv 1461.15
+"Cortex A53" Halide halide 382.16
+"Cortex A53" Rise u-loads 326.65
+"Cortex A53" Rise a-loads 330.74
+"Cortex A53" Rise reg-rot 269.89
+"Cortex A53" Lift lift 730.55
+"Cortex A73" OpenCV opencv 523.82
+"Cortex A73" Halide halide 83.42
+"Cortex A73" Rise u-loads 83.42
+"Cortex A73" Rise a-loads 76.37
+"Cortex A73" Rise reg-rot 59.42
+"Cortex A73" Lift lift 274.58
+"Intel i7 7700" OpenCV opencv 35.04
+"Intel i7 7700" Halide halide 9.52
+"Intel i7 7700" Rise u-loads 20.28
+"Intel i7 7700" Rise a-loads 10.98
+"Intel i7 7700" Rise reg-rot 10.87
+"Intel i7 7700" Lift lift 81.40

@@ -5,7 +5,7 @@
 #include "ocl.cpp"
 #include "shine_harris.cpp"
 #include "shine_harris_fission.cpp"
-#include "harrisNeon.hpp"
+// #include "harrisNeon.hpp"
 
 #include "time.hpp"
 #include "stats.hpp"
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
     }
 
     TimeStats t_stats1 = time_stats(sample_vec);
-    printf("halide manual: %.2lf [%.2lf ; %.2lf] ms\n", t_stats1.median_ms, t_stats1.min_ms, t_stats1.max_ms);
+    printf("(%d x %d) halide manual: %.2lf [%.2lf ; %.2lf] ms\n", input.dim(0).extent(), input.dim(1).extent(), t_stats1.median_ms, t_stats1.min_ms, t_stats1.max_ms);
 
     ////
 
@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
     output2.copy_to_host();
 
     TimeStats t_stats2 = time_stats(sample_vec);
-    printf("halide auto: %.2lf [%.2lf ; %.2lf] ms\n", t_stats2.median_ms, t_stats2.min_ms, t_stats2.max_ms);
+    printf("(%d x %d) halide auto: %.2lf [%.2lf ; %.2lf] ms\n", input.dim(0).extent(), input.dim(1).extent(), t_stats2.median_ms, t_stats2.min_ms, t_stats2.max_ms);
 
     error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
 
@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
         }
 
         TimeStats t_stats3 = ocl_time_stats(ocl_sample_vec);
-        printf("%s: %.2lf [%.2lf ; %.2lf] ms\n", SHINE_SOURCES[version],
+        printf("(%d x %d) %s: %.2lf [%.2lf ; %.2lf] ms\n", input.dim(0).extent(), input.dim(1).extent(), SHINE_SOURCES[version],
             t_stats3.median_ms, t_stats3.min_ms, t_stats3.max_ms);
         error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
     }
@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
     }
 
     TimeStats t_stats3 = ocl_time_stats(ocl_sample_vec);
-    printf("shine fission: %.2lf [%.2lf ; %.2lf] ms\n",
+    printf("(%d x %d) shine fission: %.2lf [%.2lf ; %.2lf] ms\n", input.dim(0).extent(), input.dim(1).extent(),
         t_stats3.median_ms, t_stats3.min_ms, t_stats3.max_ms);
     error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
 
@@ -156,7 +156,6 @@ int main(int argc, char **argv) {
     ocl_release(&ocl);
 
     ////
-
     output2.fill(0);
     sample_vec.clear();
 
@@ -165,6 +164,7 @@ int main(int argc, char **argv) {
     size_t w = input.width();
     size_t ho = (((h - 4) + 31) / 32) * 32;
     size_t hi = ho + 4;
+/* DISABLED: hand written NEON
     size_t max_threads = ho / 32;
     size_t max_cbuf_size = 4 * (w + 8) * sizeof(float);
 
@@ -207,10 +207,10 @@ int main(int argc, char **argv) {
     free(cbuf3);
 
     TimeStats t_stats4 = time_stats(sample_vec);
-    printf("harrisB3VUSP NEON: %.2lf [%.2lf ; %.2lf] ms\n", t_stats4.median_ms, t_stats4.min_ms, t_stats4.max_ms);
+    printf("(%d x %d) harrisB3VUSP NEON: %.2lf [%.2lf ; %.2lf] ms\n", input.dim(0).extent(), input.dim(1).extent(), t_stats4.median_ms, t_stats4.min_ms, t_stats4.max_ms);
 
     error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
-
+*/
     ////
 
     output2.fill(0);
@@ -247,7 +247,7 @@ int main(int argc, char **argv) {
     }
 
     TimeStats t_stats5 = time_stats(sample_vec);
-    printf("OpenCV: %.2lf [%.2lf ; %.2lf] ms\n", t_stats5.median_ms, t_stats5.min_ms, t_stats5.max_ms);
+    printf("(%d x %d) OpenCV: %.2lf [%.2lf ; %.2lf] ms\n", input.dim(0).extent(), input.dim(1).extent(), t_stats5.median_ms, t_stats5.min_ms, t_stats5.max_ms);
 
     error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
 

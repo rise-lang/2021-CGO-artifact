@@ -8,9 +8,9 @@ data <- read_delim(input, " ")
 
 data <- data %>%
   group_by(processor) %>%
-  mutate(speedup = median_ms[1]/median_ms) %>%
-  transform(processor = factor(processor, levels=c("Cortex A7", "Cortex A15", "Cortex A53", "Cortex A73")),
-            variant = factor(variant, levels=c("opencv", "u-loads", "a-loads", "reg-rot", "halide")))
+  mutate(speedup = median_ms[6]/median_ms) %>%
+  transform(processor = factor(processor, levels=c("Cortex A7", "Cortex A15", "Cortex A53", "Cortex A73", "Intel i7 7700")),
+            variant = factor(variant, levels=c("opencv", "lift", "u-loads", "a-loads", "reg-rot", "halide")))
 
 print(data)
 
@@ -27,7 +27,7 @@ g <- ggplot(data, aes(x=variant, y=speedup, fill=generator)) +
   # ylab("relative runtime performance") +
   scale_y_continuous(name = "relative runtime\n performance",
                      # trans="log2", breaks=c(1, 2, 4, 8, 16),
-                     breaks = function(lim) { c(1, seq(4, lim[2], by=2)) }) +
+                     breaks = function(lim) { c(1, seq(2, lim[2], by=2)) }) +
                      # limits=c(0, 18)) +
                      # trans=t_shift, breaks = c(0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.2, 1.4, 1.6, 1.8, 2.0),
                      # limits = c(0.5, 2)) +
@@ -42,5 +42,5 @@ g <- ggplot(data, aes(x=variant, y=speedup, fill=generator)) +
     axis.title.y = element_text(margin = margin(t = 0, r = 15, b = 0, l = 0)),
     text = element_text(size=14, family="DejaVu Sans")
   ) +
-  scale_fill_manual(values = c("#882255", "#DDCC77", "#117733"))
+  scale_fill_manual(values = c("#882255", "#DDCC77", "#505050", "#117733"))
 ggsave(output, plot = g, width = 28, height = 8, units = "cm")

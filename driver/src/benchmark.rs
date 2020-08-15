@@ -22,14 +22,14 @@ pub fn harris(env: &Env) {
     println!("harris, rise & shine!");
     let rise_n_shine_path = env.lib.join("harris-rise-and-shine");
     let gen_path = rise_n_shine_path.join("gen");
-/*
+
     host_run("sbt").arg(format!("run {}", env.target.vector_width))
         .current_dir(&rise_n_shine_path)
         .log(log, env).expect("could not rise & shine");
-*/
+
     upload_file_to(&gen_path, "shine-gen")
         .log(log, env).unwrap();
-
+/* DISABLED: hand written NEON
     let obj1 = &format!("{}/harrisB3VUSP.o", env.remote_bin);
     let mut cmd1 = &mut target_run("clang");//&env.target.remote_cc)
     cmd1.arg("-c")
@@ -52,14 +52,14 @@ pub fn harris(env: &Env) {
     {
         return;
     }
-
+*/
     let bin = &format!("{}/harris", env.remote_bin);
     if target_run(&env.target.remote_cc)
         .arg("src/harris.cpp")
         .arg("halide-gen/harris.a")
         .arg("halide-gen/harris_auto_schedule.a")
         .arg("halide-gen/runtime.a")
-        .arg(obj1)
+        // .arg(obj1)
         .arg("-I").arg("src")
         .arg("-I").arg("halide-gen")
         .arg("-I").arg("lib/halide/include")
@@ -84,12 +84,12 @@ pub fn harris(env: &Env) {
         ], "gpu"),
         TargetKind::CPU => (vec![], "cpu")
     };
-    let output = if let Some(ref cpu_a) = env.target.cpu_affinity {
+    let output1 = if let Some(ref cpu_a) = env.target.cpu_affinity {
         target_run("taskset").arg("-c").arg(cpu_a).arg(bin)
             .arg("lib/halide/apps/images/rgb.png")
             .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("30")
             .arg("harris.png")
-            .envs(envs)
+            .envs(envs.iter().cloned())
             .log(log, env).unwrap()
     } else {
         target_run(bin)
@@ -98,7 +98,22 @@ pub fn harris(env: &Env) {
             .arg("harris.png")
             .log(log, env).unwrap()
     };
-    write!(res, "{}", output).unwrap();
+    write!(res, "{}", output1).unwrap();
+    let output2 = if let Some(ref cpu_a) = env.target.cpu_affinity {
+        target_run("taskset").arg("-c").arg(cpu_a).arg(bin)
+            .arg("lib/polymage/images/venice_wikimedia.jpg")
+            .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("30")
+            .arg("venice_harris.jpg")
+            .envs(envs.iter().cloned())
+            .log(log, env).unwrap()
+    } else {
+        target_run(bin)
+            .arg("lib/polymage/images/venice_wikimedia.jpg")
+            .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("30")
+            .arg("venice_harris.jpg")
+            .log(log, env).unwrap()
+    };
+    write!(res, "{}", output2).unwrap();
 }
 
 fn benchmark_result(name: &str, desc: &str, env: &Env) -> (fs::File, fs::File) {
