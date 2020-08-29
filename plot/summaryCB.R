@@ -6,15 +6,12 @@ source("plot/core.R")
 
 data <- read_delim(input, " ")
 
-processors <- c("Cortex A7", "Cortex A15", "Cortex A53", "Cortex A73")
-#  "Intel i7 7700"
 data <- data %>%
-  filter(processor %in% processors) %>%
   group_by(size, processor) %>%
-  mutate(speedup = median_ms[5]/median_ms) %>%
+  mutate(speedup = median_ms[6]/median_ms) %>%
   transform(size = factor(size, c("1536x2560", "4256x2832")),
-            processor = factor(processor, levels=processors),
-            variant = factor(variant, levels=c("opencv", "lift", "cbuf", "cbuf+rrot", "halide")))
+            processor = factor(processor, levels=c("Cortex A7", "Cortex A15", "Cortex A53", "Cortex A73", "Intel i7 7700")),
+            variant = factor(variant, levels=c("opencv", "lift", "cbuf", "cbuf+vec", "cbuf+vec+rot", "halide")))
 
 print(data)
 
