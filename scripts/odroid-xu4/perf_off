@@ -1,0 +1,10 @@
+#!/bin/sh
+
+for i in 0 1 2 3 4 5 6 7; do
+  echo 1 > /sys/devices/system/cpu/cpu$i/online
+  echo conservative > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor
+done
+
+echo "0 120 180 240" > /sys/devices/platform/pwm-fan/hwmon/hwmon0/fan_speed
+
+~/perf_status

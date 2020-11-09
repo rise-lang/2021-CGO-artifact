@@ -1,0 +1,14 @@
+#!/bin/sh
+
+for i in 2 3 4 5; do
+  echo 1 > /sys/devices/system/cpu/cpu$i/online
+  echo performance > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor
+  echo 1800000 > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_max_freq
+done
+
+for i in 0 1; do
+  echo 1 > /sys/devices/system/cpu/cpu$i/online
+  echo ondemand > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor
+done
+
+~/perf_status

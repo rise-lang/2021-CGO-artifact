@@ -1,4 +1,4 @@
-remote: odroid@192.168.1.73
+remote: odroid@130.209.243.182
 remote-cc: clang
 kind: cpu
 cpu-affinity: 2-5

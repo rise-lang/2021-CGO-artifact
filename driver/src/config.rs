@@ -58,7 +58,7 @@ pub struct Remote {
 
 impl From<String> for Remote {
     fn from(dst: String) -> Remote {
-        Remote { dst, dir: PathBuf::from("2020-image-processing-experiment") }
+        Remote { dst, dir: PathBuf::from("2021-CGO-experiment") }
     }
 }
 

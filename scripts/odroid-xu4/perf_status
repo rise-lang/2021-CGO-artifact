@@ -1,0 +1,5 @@
+#!/bin/sh
+
+grep "" /dev/null /sys/devices/system/cpu/cpufreq/policy*/scaling_governor
+grep "" /dev/null /sys/devices/system/cpu/cpufreq/policy*/scaling_cur_freq
+grep "" /dev/null /sys/devices/system/cpu/cpufreq/policy*/scaling_max_freq

@@ -1,0 +1,17 @@
+#!/bin/sh
+
+for i in 4 5 6 7; do
+  echo 1 > /sys/devices/system/cpu/cpu$i/online
+  echo performance > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor
+  echo 1500000 > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_max_freq
+done
+
+for i in 0 1 2 3; do
+  echo 1 > /sys/devices/system/cpu/cpu$i/online
+  echo ondemand > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor
+done
+
+echo "120 180 240 250" > /sys/devices/platform/pwm-fan/hwmon/hwmon0/fan_speed
+# taskset -cp 4-7
+
+~/perf_status

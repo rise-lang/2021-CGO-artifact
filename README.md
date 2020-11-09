@@ -16,7 +16,7 @@ We will refer to this directory as `$HOST`.
 
 - git, ssh, scp, POSIX shell
 - [rust 2018](https://rust-lang.org)
-- R (version used for the paper: 3.6.1)
+- R (version used for the paper: 4.0.3)
 - sbt 1.x, java 1.8+ SDK
 - llvm 8+
 - make
@@ -40,7 +40,7 @@ Given a `$HOST/$TARGET.yaml` configuration file, the experiment can be run on
 
 **You need ssh access to the remote target without password prompt.**
 
-This will create a `2020-image-processing-experiment` folder in the home directory
+This will create a `2021-CGO-experiment` folder in the home directory
 of the remote user, where files will be uploaded during the experiment.
 The configuration files used for the paper are present in this artifact,
 but you will need to change them according to your own setup.
@@ -69,30 +69,15 @@ You can use `cat` or `less -R` on the logs in the result directory:
 
 You can also use `tail -f` to watch a log.
 
-## Linux desktop with Intel processors
-
-Configuration files:
-- `intel-i7-7700.yaml`
-- `intel-hd-gen9.yaml`
-
-Software used:
-- icc 19.0.5 (installed with Intel System Studio 2019 update 5)
-- OpenCL implementation for the CPU (installed with Intel System Studio)
-- OpenCL implementation for the GPU using the [Intel Graphics Compute Runtime](https://github.com/intel/compute-runtime)
-
 ## Odroid XU4 with ARM processors
 
-Configuration files:
+Configuration files (can be adjusted to change e.g. the ssh remote):
 - `cortex-a7.yaml`
 - `cortex-a15.yaml`
-- `mali-t628.yaml`
 
 Software used:
-- clang 8 from LLVM 8. Built from source. (can also use gcc 7.4)
+- clang 8 from LLVM 8. Built from source.
 - [POCL](portablecl.org) OpenCL implementation for the CPUs. Built from source along with LLVM 8.
-- OpenCL implementation for the Mali GPU. Helpful pages:
-  - <https://www.cnx-software.com/2018/05/13/how-to-get-started-with-opencl-on-odroid-xu4-board-with-arm-mali-t628mp6-gpu/>
-  - <https://magazine.odroid.com/article/clinfo-compiling-the-essential-opencl-gpu-tuning-utility-for-the-odroid-xu4/>
 - [OpenCV](https://opencv.org/) 4.3.0 built from source.
 ```
 cmake -D CMAKE_BUILD_TYPE=RELEASE \
@@ -105,15 +90,21 @@ cmake -D CMAKE_BUILD_TYPE=RELEASE \
   -D INSTALL_PYTHON_EXAMPLES=OFF \
   -D BUILD_EXAMPLES=OFF ..
 ```
+
+When benchmarking, we set the CPU frequency using the scripts in <scripts/odroid-xu4/>.
+The above configuration files expect to find these scripts in the `~` directory
+of the target, and will run them with password-less `sudo`.
+You can allow password-less `sudo` by adding the line `odroid ALL =(ALL) NOPASSWD: /home/odroid/perf_on_a15, /home/odroid/perf_on_a7, /home/odroid/perf_off` to `/etc/sudoers`.
+Alternatively, you can run these scripts manually before and after running the experiment.
  
 ## Odroid N2 with ARM processors
 
-Configuration files:
+Configuration files (can be adjusted to change e.g. the ssh remote):
 - `cortex-a53.yaml`
 - `cortex-a73.yaml`
 
 Software used:
-- clang 10 from LLVM 10. Built from source. (can also use gcc 7.4)
+- clang 10 from LLVM 10. Built from source.
 - [POCL](portablecl.org) OpenCL implementation for the CPUs. Built from source along with LLVM 10.
 - [OpenCV](https://opencv.org/) 4.3.0 built from source.
 ```
@@ -127,66 +118,9 @@ cmake -D CMAKE_BUILD_TYPE=RELEASE \
   -D BUILD_EXAMPLES=OFF ..
 ```
 
-### ARM CPUs frequency
-
-When benchmarking the ARM CPUs, we set their frequency using scripts such as (Odroid XU4):
-**TODO: put the files in the repository instead of the README?**
-
-```sh
-odroid@odroid:~$ cat ./perf_on_a15 
-#!/bin/sh
-
-for i in 4 5 6 7; do
-  echo 1 > /sys/devices/system/cpu/cpu$i/online
-  echo performance > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor
-  echo 1500000 > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_max_freq
-done
-
-for i in 0 1 2 3; do
-  echo 1 > /sys/devices/system/cpu/cpu$i/online
-  echo ondemand > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor
-done
-
-echo "120 180 240 255" > /sys/devices/platform/pwm-fan/hwmon/hwmon0/fan_speed
-
-~/perf_status
-odroid@odroid:~$ cat ./perf_on_a7
-#!/bin/sh
-
-for i in 0 1 2 3; do
-  echo 1 > /sys/devices/system/cpu/cpu$i/online
-  echo performance > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor
-  echo 1500000 > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_max_freq
-done
-
-for i in 4 5 6 7; do
-  echo 1 > /sys/devices/system/cpu/cpu$i/online
-  echo ondemand > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor
-done
-
-echo "120 180 240 255" > /sys/devices/platform/pwm-fan/hwmon/hwmon0/fan_speed
-
-~/perf_status
-odroid@odroid:~$ cat ./perf_off 
-#!/bin/sh
-
-for i in 0 1 2 3 4 5 6 7; do
-  echo 1 > /sys/devices/system/cpu/cpu$i/online
-  echo ondemand > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor
-done
-
-echo "0 120 180 240" > /sys/devices/platform/pwm-fan/hwmon/hwmon0/fan_speed
-
-~/perf_status
-odroid@odroid:~$ cat ./perf_status 
-#!/bin/sh
-
-grep "" /dev/null /sys/devices/system/cpu/cpufreq/policy*/scaling_governor
-grep "" /dev/null /sys/devices/system/cpu/cpufreq/policy*/scaling_cur_freq
-grep "" /dev/null /sys/devices/system/cpu/cpufreq/policy*/scaling_max_freq
-``` 
-
-We also allow to run these scripts without password with `sudo`
-by adding the line `odroid ALL =(ALL) NOPASSWD: /home/odroid/perf_on_a15, /home/odroid/perf_on_a7, /home/odroid/perf_off`
-to `/etc/sudoers`.
-An alternative is to run these scripts manually before and after running the experiment.
+When benchmarking, we set the CPU frequency using the scripts in <scripts/odroid-n2/>.
+The above configuration files expect to find these scripts in the `~` directory
+of the target, and will run them with password-less `sudo`.
+You can allow password-less `sudo` by adding the line `odroid ALL =(ALL) NOPASSWD: /home/odroid/perf_on_a53, /home/odroid/perf_on_a73, /home/odroid/perf_off` to `/etc/sudoers`.
+Alternatively, you can run these scripts manually before and after running the experiment.
+ 
