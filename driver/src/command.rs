@@ -3,11 +3,13 @@ use std::process;
 use crate::*;
 
 pub fn setup(env: &Env) {
-    let r = &env.target.remote;
-    if !remote_output(&"mkdir", &vec!["-p", r.dir.to_str().unwrap()],
-                      &[], &r.dst, Path::new("."))
-        .unwrap().status.success() {
-        panic!("could not create remote directory");
+    if env.benchmark {
+        let r = &env.target.remote;
+        if !remote_output(&"mkdir", &vec!["-p", r.dir.to_str().unwrap()],
+                          &[], &r.dst, Path::new("."))
+            .unwrap().status.success() {
+            panic!("could not create remote directory");
+        }
     }
 }
 

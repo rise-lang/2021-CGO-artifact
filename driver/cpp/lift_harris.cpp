@@ -3,16 +3,16 @@ const char* HARRIS_KERNEL_NAMES[HARRIS_KERNELS] = {
     "gray", "sobelX", "sobelY", "mul", "sum3x3", "coarsity"
 };
 const char* HARRIS_KERNEL_SOURCES[HARRIS_KERNELS] = {
-    "shine-gen/grayP.cl",
-    "shine-gen/sobelXP.cl",
-    "shine-gen/sobelYP.cl",
-    "shine-gen/mulP.cl",
-    "shine-gen/sum3x3P.cl",
-    "shine-gen/coarsityP.cl"
+    "lift-gen/grayP.cl",
+    "lift-gen/sobelXP.cl",
+    "lift-gen/sobelYP.cl",
+    "lift-gen/mulP.cl",
+    "lift-gen/sum3x3P.cl",
+    "lift-gen/coarsityP.cl"
 };
 
 const size_t HARRIS_BUFS = 9;
-struct ShineFissionContext {
+struct LiftContext {
     OCLKernel kernels[HARRIS_KERNELS];
 
     cl_mem input;
@@ -20,7 +20,7 @@ struct ShineFissionContext {
     cl_mem bufs[HARRIS_BUFS];
 };
 
-void init_fission_context(OCLExecutor* ocl, ShineFissionContext* ctx, size_t h, size_t w) {
+void init_lift_context(OCLExecutor* ocl, LiftContext* ctx, size_t h, size_t w) {
     for (int i = 0; i < HARRIS_KERNELS; i++) {
         fprintf(stderr, "loading kernel %s\n", HARRIS_KERNEL_SOURCES[i]);
         ocl_load_kernel(HARRIS_KERNEL_NAMES[i], HARRIS_KERNEL_SOURCES[i], ocl, &ctx->kernels[i]);
@@ -44,7 +44,7 @@ void init_fission_context(OCLExecutor* ocl, ShineFissionContext* ctx, size_t h, 
     }
 }
 
-void destroy_fission_context(OCLExecutor* ocl, ShineFissionContext* ctx) {
+void destroy_lift_context(OCLExecutor* ocl, LiftContext* ctx) {
     for (int i = 0; i < HARRIS_KERNELS; i++) {
         ocl_release_kernel(&ctx->kernels[i]);
     }
@@ -56,8 +56,8 @@ void destroy_fission_context(OCLExecutor* ocl, ShineFissionContext* ctx) {
     }
 }
 
-void clear_fission_context_output(
-    OCLExecutor* ocl, ShineFissionContext* ctx, size_t h, size_t w
+void clear_lift_context_output(
+    OCLExecutor* ocl, LiftContext* ctx, size_t h, size_t w
 ) {
     size_t ho = (((h - 4) + 31) / 32) * 32;
     float zero = 0.0f;
@@ -65,8 +65,8 @@ void clear_fission_context_output(
         0, ho * w * sizeof(float), 0, NULL, NULL));
 }
 
-std::pair<cl_event, cl_event> shine_harris_fission(
-    OCLExecutor* ocl, ShineFissionContext* ctx,
+std::pair<cl_event, cl_event> lift_harris(
+    OCLExecutor* ocl, LiftContext* ctx,
     float* output, size_t h, size_t w, const float* input
 ) {
     // rounding up output lines to 32

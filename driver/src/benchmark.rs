@@ -1,65 +1,51 @@
 use crate::*;
 
 pub fn harris(env: &Env) {
-    let (ref mut log, ref mut res) =
-        benchmark_result("harris", "harris corner detection", &env);
+    let (ref mut log, ref mut res) = benchmark_result(&env);
 
-    let halide_harris = env.lib.join("halide")
-        .join("apps").join("harris");
-    host_run("make").arg(format!("bin/{}/harris.a", env.target.halide))
-        .current_dir(&halide_harris)
-        .log(log, env).expect("could not build harris");
-    host_run("make").arg(format!("bin/{}/harris_auto_schedule.a", env.target.halide))
-        .current_dir(&halide_harris)
-        .log(log, env).expect("could not build harris");
-    host_run("make").arg(format!("bin/{}/runtime.a", env.target.halide))
-        .current_dir(&halide_harris)
-        .log(log, env).expect("could not build runtime");
+    if let Some(ref cmd) = env.target.before_measuring {
+        target_run(cmd).log(log, &env).unwrap();
+    }
+
+    target_run("mkdir").arg("-p").arg(env.remote_bin)
+        .log(log, &env).unwrap();
+    upload_file_to(&Path::new("driver").join("cpp"), "src")
+        .log(log, &env).unwrap();
+
+    let halide_path = env.lib.join("halide");
+    let polymage_path = env.lib.join("polymage");
+
+    upload_file(&halide_path.join("include").join("HalideRuntime.h"))
+        .log(log, env).expect("could not upload Halide headers");
+    upload_file(&halide_path.join("include").join("HalideBuffer.h"))
+        .log(log, env).expect("could not upload Halide headers");
+    upload_file(&halide_path.join("tools").join("halide_image_io.h"))
+        .log(log, env).expect("could not upload Halide headers");
+    upload_file(&halide_path.join("apps").join("images").join("rgb.png"))
+        .log(log, env).expect("could not upload Halide images");
+
+    upload_file(&polymage_path.join("images").join("venice_wikimedia.jpg"))
+        .log(log, env).expect("could not upload Polymage images");
+
+    let halide_harris = halide_path.join("apps").join("harris");
     upload_file_to(&halide_harris.join("bin").join(&env.target.halide),
                    "halide-gen")
         .log(log, env).expect("could not upload harris files");
 
-    println!("harris, rise & shine!");
     let rise_n_shine_path = env.lib.join("harris-rise-and-shine");
     let gen_path = rise_n_shine_path.join("gen");
-
-    host_run("sbt").arg(format!("run {}", env.target.vector_width))
-        .current_dir(&rise_n_shine_path)
-        .log(log, env).expect("could not rise & shine");
-
     upload_file_to(&gen_path, "shine-gen")
         .log(log, env).unwrap();
-/* DISABLED: hand written NEON
-    let obj1 = &format!("{}/harrisB3VUSP.o", env.remote_bin);
-    let mut cmd1 = &mut target_run("clang");//&env.target.remote_cc)
-    cmd1.arg("-c")
-        .arg("src/harrisB3VUSP.c")
-        .arg("-I").arg("src")
-        .arg("-no-pie")
-        .arg("-fdiagnostics-color")
-        .arg("-Ofast")
-        //.arg("-target").arg("arm-linux-gnueabihf")
-        .arg(format!("-mcpu={}", env.target_name));
-    cmd1 = if (env.target_name == "cortex-a7" || env.target_name == "cortex-a15") {
-        cmd1.arg("-mfpu=neon-vfpv4").arg("-mfloat-abi=hard")
-    } else {
-        cmd1
-    };
-    if cmd1
-        .arg("-fopenmp")
-        .arg("-o").arg(obj1)
-        .log(log, env).is_none()
-    {
-        return;
-    }
-*/
+
+    upload_file(Path::new("lift-gen"))
+        .log(log, env).unwrap();
+
     let bin = &format!("{}/harris", env.remote_bin);
     if target_run(&env.target.remote_cc)
         .arg("src/harris.cpp")
         .arg("halide-gen/harris.a")
         .arg("halide-gen/harris_auto_schedule.a")
         .arg("halide-gen/runtime.a")
-        // .arg(obj1)
         .arg("-I").arg("src")
         .arg("-I").arg("halide-gen")
         .arg("-I").arg("lib/halide/include")
@@ -98,7 +84,7 @@ pub fn harris(env: &Env) {
             .arg("harris.png")
             .log(log, env).unwrap()
     };
-    write!(res, "{}", output1).unwrap();
+    record_result(&output1, res);
     let output2 = if let Some(ref cpu_a) = env.target.cpu_affinity {
         target_run("taskset").arg("-c").arg(cpu_a).arg(bin)
             .arg("lib/polymage/images/venice_wikimedia.jpg")
@@ -113,23 +99,29 @@ pub fn harris(env: &Env) {
             .arg("venice_harris.jpg")
             .log(log, env).unwrap()
     };
-    write!(res, "{}", output2).unwrap();
-}
+    record_result(&output2, res);
 
-fn benchmark_result(name: &str, desc: &str, env: &Env) -> (fs::File, fs::File) {
-    let path = env.results.join(name);
-    println!("{} -> {}[.bench]",
-             format!("-- benchmarking {}", desc).yellow(),
-             path.to_str().unwrap());
-    (fs::File::create(&path).unwrap(),
-     fs::File::create(path.with_extension("bench")).unwrap())
-}
-
-fn record_result(name: &str, out: &str, res: &mut fs::File) {
-    print!("{}: ", name.green());
-    for (a, b) in out.split_whitespace().zip(&[" [", "-", "] ms"]) {
-        print!("{}{}", a, b);
+    if let Some(ref cmd) = env.target.after_measuring {
+        target_run(cmd).log(log, &env).unwrap();
     }
-    println!();
-    write!(res, "{} {}", name, out).unwrap();
+}
+
+fn benchmark_result(env: &Env) -> (fs::File, fs::File) {
+    let path = env.results.join("benchmark");
+    println!("{} -> {}[.data]", "-- benchmarking".yellow(), path.to_str().unwrap());
+    (fs::File::create(&path).unwrap(),
+     fs::File::create(path.with_extension("data")).unwrap())
+}
+
+fn record_result(out: &str, res: &mut fs::File) {
+    let mut sp = out.split_whitespace();
+    while let Some(size) = sp.next() {
+        let generator = sp.next().unwrap();
+        let variant = sp.next().unwrap();
+        let med = sp.next().unwrap();
+        let min = sp.next().unwrap();
+        let max = sp.next().unwrap();
+        println!("[{}] {:8} {:12}: {:6} median ms [{:6} - {:6}]", size, generator, variant, med, min, max);
+    }
+    write!(res, "{}", out).unwrap();
 }

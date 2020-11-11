@@ -4,7 +4,7 @@
 
 #include "ocl.cpp"
 #include "shine_harris.cpp"
-#include "shine_harris_fission.cpp"
+#include "lift_harris.cpp"
 // #include "harrisNeon.hpp"
 
 #include "time.hpp"
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
     }
 
     TimeStats t_stats1 = time_stats(sample_vec);
-    printf("(%d x %d) halide manual: %.2lf [%.2lf ; %.2lf] ms\n", input.dim(0).extent(), input.dim(1).extent(), t_stats1.median_ms, t_stats1.min_ms, t_stats1.max_ms);
+    printf("%dx%d Halide halide %.2lf %.2lf %.2lf\n", input.dim(0).extent(), input.dim(1).extent(), t_stats1.median_ms, t_stats1.min_ms, t_stats1.max_ms);
 
     ////
 
@@ -74,24 +74,25 @@ int main(int argc, char **argv) {
     output2.set_min(2, 2);
     sample_vec.clear();
 
-    for (int i = 0; i < timing_iterations; i++) {
-        auto start = Clock::now();
+    {
+    // for (int i = 0; i < timing_iterations; i++) {
+    //    auto start = Clock::now();
         int h_error = harris_auto_schedule(input, output2);
-        output2.device_sync();
-        auto stop = Clock::now();
+    //    output2.device_sync();
+    //    auto stop = Clock::now();
 
         if (h_error) {
             fprintf(stderr, "halide returned an error: %d\n", h_error);
             exit(EXIT_FAILURE);
         }
 
-        sample_vec.push_back(std::chrono::duration<double, std::milli>(stop - start).count());
+    //    sample_vec.push_back(std::chrono::duration<double, std::milli>(stop - start).count());
     }
 
     output2.copy_to_host();
 
-    TimeStats t_stats2 = time_stats(sample_vec);
-    printf("(%d x %d) halide auto: %.2lf [%.2lf ; %.2lf] ms\n", input.dim(0).extent(), input.dim(1).extent(), t_stats2.median_ms, t_stats2.min_ms, t_stats2.max_ms);
+    // TimeStats t_stats2 = time_stats(sample_vec);
+    // printf("%dx%d Halide auto %.2lf %.2lf %.2lf\n", input.dim(0).extent(), input.dim(1).extent(), t_stats2.median_ms, t_stats2.min_ms, t_stats2.max_ms);
 
     error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
 
@@ -118,7 +119,7 @@ int main(int argc, char **argv) {
         }
 
         TimeStats t_stats3 = ocl_time_stats(ocl_sample_vec);
-        printf("(%d x %d) %s: %.2lf [%.2lf ; %.2lf] ms\n", input.dim(0).extent(), input.dim(1).extent(), SHINE_SOURCES[version],
+        printf("%dx%d Rise %s %.2lf %.2lf %.2lf\n", input.dim(0).extent(), input.dim(1).extent(), SHINE_NAMES[version],
             t_stats3.median_ms, t_stats3.min_ms, t_stats3.max_ms);
         error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
     }
@@ -131,11 +132,11 @@ int main(int argc, char **argv) {
     // wipe out any previous results for correctness check
     output2.fill(0);
 
-    ShineFissionContext fiss_ctx;
-    init_fission_context(&ocl, &fiss_ctx, input.height(), input.width());
+    LiftContext lift_ctx;
+    init_lift_context(&ocl, &lift_ctx, input.height(), input.width());
 
     for (int i = 0; i < timing_iterations; i++) {
-        auto events = shine_harris_fission(&ocl, &fiss_ctx,
+        auto events = lift_harris(&ocl, &lift_ctx,
         output2.data(), input.height(), input.width(), input.data());
 
         cl_ulong start, stop;
@@ -145,11 +146,11 @@ int main(int argc, char **argv) {
     }
 
     TimeStats t_stats3 = ocl_time_stats(ocl_sample_vec);
-    printf("(%d x %d) shine fission: %.2lf [%.2lf ; %.2lf] ms\n", input.dim(0).extent(), input.dim(1).extent(),
+    printf("%dx%d Lift lift %.2lf %.2lf %.2lf\n", input.dim(0).extent(), input.dim(1).extent(),
         t_stats3.median_ms, t_stats3.min_ms, t_stats3.max_ms);
     error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
 
-    destroy_fission_context(&ocl, &fiss_ctx);
+    destroy_lift_context(&ocl, &lift_ctx);
 
     ////
 
@@ -164,54 +165,6 @@ int main(int argc, char **argv) {
     size_t w = input.width();
     size_t ho = (((h - 4) + 31) / 32) * 32;
     size_t hi = ho + 4;
-/* DISABLED: hand written NEON
-    size_t max_threads = ho / 32;
-    size_t max_cbuf_size = 4 * (w + 8) * sizeof(float);
-
-    float* inputBis = (float*) malloc(3 * hi * w * sizeof(float));
-    float* outputBis = (float*) malloc(ho * w * sizeof(float));
-    float* cbuf1 = (float*) malloc(max_threads * max_cbuf_size);
-    float* cbuf2 = (float*) malloc(max_threads * max_cbuf_size);
-    float* cbuf3 = (float*) malloc(max_threads * max_cbuf_size);
-
-    for (int c = 0; c < 3; c++) {
-      for (int y = 0; y < input.height(); y++) {
-        for (int x = 0; x < input.width(); x++) {
-          int i = ((c * input.height() + y) * input.width()) + x;
-          int iBis = ((c * hi + y) * input.width()) + x;
-          inputBis[iBis] = input.data()[i];
-        }
-      }
-    }
-
-    for (int i = 0; i < timing_iterations; i++) {
-        auto start = Clock::now();
-        harrisB3VUSP(outputBis, ho, w, inputBis, cbuf3, cbuf2, cbuf1);
-        auto stop = Clock::now();
-
-        sample_vec.push_back(std::chrono::duration<double, std::milli>(stop - start).count());
-    }
-
-    for (int y = 0; y < output2.height(); y++) {
-      for (int x = 0; x < output2.width(); x++) {
-        int i = (y * output2.width()) + x;
-        int iBis = (y * (output2.width() + 4)) + x;
-        output2.data()[i] = outputBis[iBis];
-      }
-    }
-
-    free(inputBis);
-    free(outputBis);
-    free(cbuf1);
-    free(cbuf2);
-    free(cbuf3);
-
-    TimeStats t_stats4 = time_stats(sample_vec);
-    printf("(%d x %d) harrisB3VUSP NEON: %.2lf [%.2lf ; %.2lf] ms\n", input.dim(0).extent(), input.dim(1).extent(), t_stats4.median_ms, t_stats4.min_ms, t_stats4.max_ms);
-
-    error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
-*/
-    ////
 
     output2.fill(0);
     sample_vec.clear();
@@ -247,7 +200,7 @@ int main(int argc, char **argv) {
     }
 
     TimeStats t_stats5 = time_stats(sample_vec);
-    printf("(%d x %d) OpenCV: %.2lf [%.2lf ; %.2lf] ms\n", input.dim(0).extent(), input.dim(1).extent(), t_stats5.median_ms, t_stats5.min_ms, t_stats5.max_ms);
+    printf("%dx%d OpenCV opencv %.2lf %.2lf %.2lf\n", input.dim(0).extent(), input.dim(1).extent(), t_stats5.median_ms, t_stats5.min_ms, t_stats5.max_ms);
 
     error_stats(output1.data(), output2.data(), output1.height() * output1.width(), 0.01, 100);
 

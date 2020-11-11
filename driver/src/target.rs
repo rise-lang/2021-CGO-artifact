@@ -22,10 +22,6 @@ pub struct Target {
     /// Target processor kind, CPU or GPU?
     pub kind: TargetKind,
 
-    /// The number of threads that should be used for parallelism
-    #[serde(rename = "num-threads")]
-    pub num_threads: usize,
-
     /// The size of vectors that should be used
     #[serde(rename = "vector-width")]
     pub vector_width: u16,

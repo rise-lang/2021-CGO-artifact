@@ -1,15 +1,22 @@
-const int SHINE_VERSIONS = 4;
+const int SHINE_VERSIONS = 2;
+
+const char* SHINE_NAMES[SHINE_VERSIONS] = {
+    "cbuf",
+    "cbuf+rrot"
+};
 
 const char* SHINE_SOURCES[SHINE_VERSIONS] = {
-    "shine-gen/harrisB3SPRW.cl",
+    "shine-gen/cbuf.cl",
+    "shine-gen/cbuf+rrot.cl"
+    //"shine-gen/harrisB3SPRW.cl",
     //"shine-gen/harrisBVU.cl",
     //"shine-gen/harrisBVA.cl",
     //"shine-gen/harrisB3VUSP.cl",
-    "shine-gen/harrisB3VUSPRW.cl",
+    //"shine-gen/harrisB3VUSPRW.cl",
     //"shine-gen/harrisB3VASP.cl",
-    "shine-gen/harrisB3VASPRW.cl",
+    //"shine-gen/harrisB3VASPRW.cl",
     //"shine-gen/harrisB3VASPRR.cl",
-    "shine-gen/harrisB3VASPRRRW.cl"
+    //"shine-gen/harrisB3VASPRRRW.cl"
     //"shine-gen/harrisB4VUSP.cl",
     //"shine-gen/harrisB4VASP.cl",
     //"shine-gen/harrisB4VASPRR.cl",

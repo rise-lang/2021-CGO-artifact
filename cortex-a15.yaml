@@ -2,7 +2,6 @@ remote: odroid@130.209.252.128
 remote-cc: clang
 kind: cpu
 cpu-affinity: 4-7
-num-threads: 4
 vector-width: 4
 before-measuring: sudo -n ~/perf_on_a15
 after-measuring: sudo -n ~/perf_off

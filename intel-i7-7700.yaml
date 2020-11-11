@@ -2,7 +2,6 @@ remote: koetho@130.209.252.193
 remote-cc: icc
 #remote-cc: clang
 kind: cpu
-num-threads: 4
 vector-width: 8
 ocl-platform-name: Intel(R) CPU Runtime
 #ocl-platform-name: Portable Computing Language
