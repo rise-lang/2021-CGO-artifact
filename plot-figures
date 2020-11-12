@@ -1,0 +1,4 @@
+#!/bin/sh
+
+Rscript --vanilla plot/figure1.R
+Rscript --vanilla plot/figure8.R

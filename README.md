@@ -10,32 +10,37 @@ We recommend using an X86 Linux machine for the host.
 To reproduce the results reported in Figures 1 and 8, you will need access to ARM Cortex A7, A15, A53 and A73 processors.
 These processors can be found on the Odroid XU4 and Odroid N2 boards which were used for the paper.
 
-**TODO: we provide access to our own Odroid XU4 and Odroid N2 boards for convenience?**
-
-## Installation on Host
-
-**TODO: update git URL**
-```sh
-git clone --recursive https://gitlab.com/Bastacyclop/2021-CGO-artifact.git
-cd 2021-CGO-artifact
-```
+**TODO: we provide access to our own Odroid XU4 and Odroid N2 boards for convenience? give ssh key instructions**
 
 ## Host Dependencies
 
 The following software is required to run the artifact on the host.
 
 - git, ssh, scp, POSIX shell
+- zlib
 - [rust](https://rust-lang.org) 1.4+
-- R (to plot figures; version used for the paper: 4.0.3)
 - sbt 1.x, java 1.8+ SDK
 - llvm 8+
 - make
+- to plot figures:
+  - R 3.6 or 4.0
+  - DejaVu Sans font
 
 Alternatively, we provide a docker image for convenience, which you can build and run:
-**TODO: create the Dockerfile and fill in $IMAGE_NAME**
 ```sh
-docker build .
-docker run -it $IMAGE_NAME
+sudo systemctl start docker.service
+docker build . -t cgo21-rise
+docker run --net=host -it cgo21-rise
+```
+
+## Installation on Host
+
+To install the artifact on the host (potentially from the provided docker container):
+
+**TODO: update git URL**
+```sh
+git clone --recursive https://gitlab.com/Bastacyclop/2020-image-processing-artifact.git -b cgo21 2021-CGO-artifact
+cd 2021-CGO-artifact
 ```
 
 ## Target Dependencies
@@ -88,6 +93,7 @@ You might need to tweak them according to your setup (e.g. change the ssh destin
 You can create custom configuration files to run benchmarks on any OpenCL-enabled target (not just the ARM CPUs used in the paper), but expect different performance behaviour.
 
 **You need ssh access to the remote target without password prompt (use ssh keys).**
+**TODO: give instructions to setup an ssh key**
 
 ### Odroid XU4 target configurations
 
@@ -115,7 +121,7 @@ and then plot the figures.
 
 ### Running benchmarks
 
-The entire workflow should roughly take between 30mn and 1h.
+The entire workflow should be feasible within an hour.
 For every $TARGET (cortex-a7, cortex-a15, cortex-a53, cortex-a73):
 - generate code by running `./codegen -t $TARGET.yaml`
   
@@ -139,11 +145,12 @@ First, either create or symlink `lib/Rlibs`, where R libraries will be fetched a
 mkdir lib/Rlibs
 # or use an existing directory to avoid duplication
 ln -s ~/.rlibs lib/Rlibs
+# alternatively do neither to use system libraries (requires sudo)
 ```
 
-Now you can plot the figures:
-
-**TODO**
+Now you can plot the figures by running `./plot-figures`, which will generate:
+- `results/figure1.pdf`, some visual details are different from the paper figure because it was edited using Inkscape.
+- `results/figure8.pdf`
 
 ## Looking at the Logs
 

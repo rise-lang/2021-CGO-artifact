@@ -1,15 +1,14 @@
-args <- commandArgs(TRUE)
-input <- paste0(args[1])
-output <- paste0(input, "Intro.pdf")
+input <- "results/cortex-a53/benchmark.data"
+output <- "results/figure1.pdf"
 
 source("plot/core.R")
 
-data <- read_delim(input, " ")
+cols <- c("size", "generator", "variant", "median_ms", "min_ms", "max_ms")
+data <- read_delim(input, " ", col_names = cols)
 
 variants = c("halide", "lift", "cbuf+rrot")
 data <- data %>%
   filter(size == "1536x2560") %>%
-  filter(processor == "Cortex A53") %>%
   filter(variant %in% variants) %>%
   mutate(speedup = median_ms[1]/median_ms) %>%
   transform(variant = factor(variant, levels=variants))

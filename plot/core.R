@@ -1,5 +1,5 @@
 libPath <- "lib/Rlibs/"
-.libPaths(libPath)
+.libPaths(c(libPath, .libPaths()))
 
 usePackage <- function(p) {
    if (!is.element(p, installed.packages()[,1]))
@@ -9,5 +9,5 @@ usePackage <- function(p) {
 
 usePackage("tidyverse")
 usePackage("extrafont")
-#font_import(prompt=FALSE)
+font_import(prompt=FALSE, pattern='DejaVuSans.ttf')
 loadfonts()
