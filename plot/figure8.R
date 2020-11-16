@@ -29,7 +29,13 @@ data <- data %>%
   mutate(mpxps = (pixels/1e6)/(median_ms/1e3)) %>%
   transform(size = factor(size, c("1536x2560", "4256x2832")),
             processor = factor(processor, levels=processors),
-            variant = factor(variant, levels=c("opencv", "lift", "cbuf", "cbuf+rrot", "halide")))
+            variant = factor(variant, levels=c("opencv", "lift", "cbuf", "cbuf+rrot", "halide"))) %>%
+  mutate(variant = recode(variant,
+                          opencv = "OpenCV",
+                          lift = "Lift",
+                          cbuf = "Rise cbuf",
+                          `cbuf+rrot` = "Rise cbuf+rrot",
+                          halide = "Halide"))
 
 print(data)
 
@@ -42,7 +48,7 @@ g <- ggplot(data, aes(x=variant, y=mpxps, fill=generator)) +
                      # limits=c(0, 18)) +
                      # trans=t_shift, breaks = c(0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.2, 1.4, 1.6, 1.8, 2.0),
                      # limits = c(0.5, 2)) +
-  geom_bar(colour = "black", position="dodge", stat="identity", aes(alpha=size)) + # show.legend = FALSE,
+  geom_bar(colour = "black", position="dodge", stat="identity", aes(alpha=size)) +
   # geom_hline(yintercept = 1) +
   facet_wrap(~processor, scales="free_y", nrow=1) +
   # coord_flip() +
@@ -53,6 +59,6 @@ g <- ggplot(data, aes(x=variant, y=mpxps, fill=generator)) +
     axis.title.y = element_text(margin = margin(t = 0, r = 15, b = 0, l = 0)),
     text = element_text(size=14, family="DejaVu Sans")
   ) +
-  scale_fill_manual(values = c("#882255", "#DDCC77", "#505050", "#117733")) +
-  scale_alpha_manual(values = c(0.75, 1.0))
+  scale_fill_manual(values = c("#882255", "#7D500E", "#505050", "#117733"), breaks=0) +
+  scale_alpha_manual(values = c(0.6, 1.0))
 ggsave(output, plot = g, width = 28, height = 8, units = "cm")

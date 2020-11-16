@@ -31,5 +31,5 @@ g <- ggplot(data, aes(x=variant, y=speedup, fill=generator)) +
     axis.title.y = element_text(margin = margin(t = 0, r = 15, b = 0, l = 0)),
     text = element_text(size=10, family="DejaVu Sans")
   ) +
-  scale_fill_manual(values = c("#882255", "#DDCC77", "#117733"))
+  scale_fill_manual(values = c("#882255", "#7D500E", "#117733"))
 ggsave(output, plot = g, width = 8, height = 3, units = "cm")
