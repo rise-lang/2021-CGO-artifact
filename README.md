@@ -5,12 +5,14 @@ This repository presents the artifact to supplement the paper
 to be presented at the [International Symposium on Code Generation and Optimization](https://conf.researchr.org/home/cgo-2021)
 in 2021.
 
-In this artifact, the host computer drives benchmarks on multiple target processors over ssh.
-We recommend using an X86 Linux machine for the host.
-To reproduce the results reported in Figures 1 and 8, you will need access to ARM Cortex A7, A15, A53 and A73 processors.
-These processors can be found on the Odroid XU4 and Odroid N2 boards which were used for the paper.
+This artifact contains the source code used to produce the performance results presented in the paper.
+The host computer drives benchmarks on multiple target processors over ssh.
+We recommend using an X86 Linux machine for the host, and Linux targets.
+To reproduce the results reported in Figures 1 and 8, you will need access to ARM Cortex A7, A15, A53 and A73 processors
+(we used Odroid XU4 and Odroid N2 boards for the paper).
+Other OpenCL-enabled processors can be used, but expect different performance behavior.
 
-**TODO: we provide access to our own Odroid XU4 and Odroid N2 boards for convenience? give ssh key instructions**
+**TODO: provide access to our own Odroid XU4 and Odroid N2 boards for convenience? give ssh key instructions**
 
 ## Host Dependencies
 
@@ -37,9 +39,8 @@ docker run --net=host -it cgo21-rise
 
 To install the artifact on the host (potentially from the provided docker container):
 
-**TODO: update git URL**
 ```sh
-git clone --recursive https://gitlab.com/Bastacyclop/2020-image-processing-artifact.git -b cgo21 2021-CGO-artifact
+git clone --recursive https://github.com/rise-lang/2021-CGO-artifact.git
 cd 2021-CGO-artifact
 ```
 
@@ -90,10 +91,9 @@ cmake -D CMAKE_BUILD_TYPE=RELEASE \
 
 This artifact includes configuration files used for the paper (`.yaml` files at the root).
 You might need to tweak them according to your setup (e.g. change the ssh destination).
-You can create custom configuration files to run benchmarks on any OpenCL-enabled target (not just the ARM CPUs used in the paper), but expect different performance behaviour.
+You can create custom configuration files to run benchmarks on any other OpenCL-enabled target, but expect different performance behaviour.
 
-**You need ssh access to the remote target without password prompt (use ssh keys).**
-**TODO: give instructions to setup an ssh key**
+**You need ssh access to the remote target without password prompt ([setup ssh keys](https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys-2)).**
 
 ### Odroid XU4 target configurations
 
@@ -162,7 +162,16 @@ You can use `cat` or `less -R` on the logs in the result directory:
 
 You can also use `tail -f` to watch a log.
 
-## **TODO? describe artifact file structure more**
+## Artifact directories
+
+- [`driver`](driver) contains Rust and C/C++ code to run the benchmarks
+- [`lib`](lib) contains various library dependencies, in particular:
+  - [`halide`](lib/halide) contains the Halide language and compiler
+  - [`shine`](lib/shine) contains the Rise language and its Shine compiler
+- [`lift-gen`](lift-gen) contains the Lift-generated OpenCL kernels
+- [`plot`](plot) contains the R plotting scripts
+- [`results`](results) contains the benchmark logs and results
+- [`scripts`](scripts) contains various useful scripts
 
 ## Authors
 
