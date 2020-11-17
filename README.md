@@ -118,6 +118,8 @@ You can allow password-less `sudo` by adding the line `odroid ALL =(ALL) NOPASSW
 
 To reproduce the results reported in Figures 1 and 8 you should first run the benchmarks for every target,
 and then plot the figures.
+If you cannot run the benchmarks on all the processors used in the paper,
+you will still be able to plot the figures as we included our own benchmark data output in this artifact.
 
 ### Running benchmarks
 
