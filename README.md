@@ -68,8 +68,8 @@ Building Halide and Rise can take some time on the first run, after that code ge
 Running `./benchmark -t $TARGET.yaml` on the host will:
 - create a `2021-CGO-experiment` folder in the home directory of the remote user, where the necessary files will be automatically uploaded.
 - benchmark the performance of the Harris operator using OpenCV, Halide, Rise and Lift implementations; checking output correctness
-  - for the small image [`lib/halide/apps/images/rgb.png`](`lib/halide/apps/images/rgb.png`)
-  - for the big image [`lib/polymage/images/venice_wikimedia.jpg`](`lib/polymage/images/venice_wikimedia.jpg`)
+  - for the small image [`lib/halide/apps/images/rgb.png`](lib/halide/apps/images/rgb.png)
+  - for the big image [`lib/polymage/images/venice_wikimedia.jpg`](lib/polymage/images/venice_wikimedia.jpg)
 - record the benchmark results on the host in `results/$TARGET/benchmark.data`.
 
 At this point SSH access to a properly configured target is required (see target configuration section).
@@ -97,7 +97,7 @@ Running `./plot-figures` on the host will generate:
 
 This artifact includes configuration files used for the paper (`.yaml` files at the root).
 You will need to tweak them according to your setup (e.g. change the ssh destination in the `remote` field).
-You can create custom configuration files to generated code and run benchmarks on any other OpenCL-enabled target, but expect different performance behaviour.
+You can create custom configuration files to generate code and run benchmarks on any other OpenCL-enabled target, but expect different performance behaviour.
 See [`intel-i7-7700.yaml`](intel-i7-7700.yaml) for an example of Intel CPU target configuration.
 
 **You need ssh access to the remote target without password prompt ([setup ssh keys](https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys-2)).**
