@@ -6,3 +6,4 @@ vector-width: 8
 ocl-platform-name: Intel(R) CPU Runtime
 #ocl-platform-name: Portable Computing Language
 halide: x86-64-linux-avx-avx2-fma-sse41
+opencv-headers: /usr/local/include/opencv4

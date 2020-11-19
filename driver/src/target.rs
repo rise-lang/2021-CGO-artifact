@@ -45,6 +45,10 @@ pub struct Target {
 
     /// Halide target string
     pub halide: String,
+
+    /// OpenCV headers directory
+    #[serde(rename = "opencv-headers")]
+    pub opencv_headers: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

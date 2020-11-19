@@ -7,3 +7,4 @@ before-measuring: sudo -n ~/perf_on_a7
 after-measuring: sudo -n ~/perf_off
 ocl-platform-name: Portable Computing Language
 halide: arm-32-linux
+opencv-headers: /usr/local/include/opencv4

@@ -51,7 +51,7 @@ pub fn harris(env: &Env) {
         .arg("-I").arg("halide-gen")
         .arg("-I").arg("lib/halide/include")
         .arg("-I").arg("lib/halide/tools")
-        .arg("-I").arg("/usr/local/include/opencv4")
+        .arg("-I").arg(&env.target.opencv_headers)
         .arg("-no-pie")
         .arg("-fdiagnostics-color")
         .arg("-O2").arg("-lstdc++").arg("-std=c++14")
