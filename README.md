@@ -68,8 +68,8 @@ Building Halide and Rise can take some time on the first run, after that code ge
 Running `./benchmark -t $TARGET.yaml` on the host will:
 - create a `2021-CGO-experiment` folder in the home directory of the remote user, where the necessary files will be automatically uploaded.
 - benchmark the performance of the Harris operator using OpenCV, Halide, Rise and Lift implementations; checking output correctness
-  - for the small image [`lib/halide/apps/images/rgb.png`](lib/halide/apps/images/rgb.png)
-  - for the big image [`lib/polymage/images/venice_wikimedia.jpg`](lib/polymage/images/venice_wikimedia.jpg)
+  - for the small image `lib/halide/apps/images/rgb.png`
+  - for the big image `lib/polymage/images/venice_wikimedia.jpg`
 - record the benchmark results on the host in `results/$TARGET/benchmark.data`.
 
 At this point SSH access to a properly configured target is required (see target configuration section).
