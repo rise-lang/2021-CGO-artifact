@@ -21,11 +21,11 @@ The following software is required to run the artifact on the host.
 - git, ssh, scp, POSIX shell
 - zlib
 - [rust](https://rust-lang.org) 1.4+
-- sbt 1.x, java 1.8+ SDK
-- llvm 8+
+- sbt 1.x, java 1.8 to 1.11 SDK
+- llvm 8 to 10
 - make
 - to plot figures:
-  - R 3.6 or 4.0
+  - R 3.6 to 4.0
   - DejaVu Sans font
 
 Alternatively, we provide a docker image for convenience, which you can build and run:
