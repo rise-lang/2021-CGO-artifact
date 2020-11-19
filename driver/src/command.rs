@@ -7,7 +7,7 @@ pub fn setup(env: &Env) {
         let r = &env.target.remote;
         if !remote_output(&"mkdir", &vec!["-p", r.dir.to_str().unwrap()],
                           &[], &r.dst, Path::new("."))
-            .unwrap().status.success() {
+            .expect("could not create remote directory").status.success() {
             panic!("could not create remote directory");
         }
     }
@@ -138,18 +138,19 @@ impl<'a> CommandExt for UploadCommand<'a> {
             Some(rp) => r.dir.join(rp),
             None => r.dir.join(self.host_path)
         };
-        assert!(remote_output(&"mkdir", &vec!["-p", remote_path.parent().unwrap().to_str().unwrap()],
+        assert!(remote_output(&"mkdir",
+                              &vec!["-p", remote_path.parent().unwrap().to_str().unwrap()],
             &[], &r.dst, Path::new(".")
-        ).unwrap().status.success());
+        ).expect("could not create upload directory").status.success());
         assert!(remote_output(&"rm", &vec!["-rf", remote_path.to_str().unwrap()],
                               &[], &r.dst, Path::new(".")
-        ).unwrap().status.success());
+        ).expect("could not clear upload directory").status.success());
         let mut cmd = process::Command::new("scp");
         cmd.arg("-r")
             .args(&["-o", "ControlMaster=auto", "-o", "ControlPersist=1m"])
             .arg(self.host_path)
-            .arg(format!("{}:{:?}", r.dst, remote_path));
-        // DEBUG println!("{:?}", cmd);
+            .arg(format!("scp://{}/{:?}", r.dst, remote_path));
+        // println!("{:?}", cmd);
         cmd.output()
     }
 }
@@ -162,7 +163,7 @@ fn remote_output<S: AsRef<str>>(program: &S,
 {
     let mut r = process::Command::new("ssh");
     r.args(&["-o", "ControlMaster=auto", "-o", "ControlPersist=1m"])
-        .arg(dst);
+        .arg(format!("ssh://{}", dst));
     for (k, v) in env {
         r.arg("export").arg(format!("{}=\"{}\";", k.as_ref(), v.as_ref()));
     }

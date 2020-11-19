@@ -47,7 +47,8 @@ pub fn setup<F>(use_env: F) where F: FnOnce(&Env) {
         benchmark: opt.benchmark,
     };
 
-    fs::create_dir_all(&env.results).unwrap();
+    fs::create_dir_all(&env.results)
+        .expect("could not create results directory");
 
     command::setup(&env);
 

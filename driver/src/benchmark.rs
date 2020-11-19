@@ -4,13 +4,14 @@ pub fn harris(env: &Env) {
     let (ref mut log, ref mut res) = benchmark_result(&env);
 
     if let Some(ref cmd) = env.target.before_measuring {
-        target_run(cmd).log(log, &env).unwrap();
+        target_run(cmd).log(log, &env)
+            .expect("could not run required command before measuring");
     }
 
     target_run("mkdir").arg("-p").arg(env.remote_bin)
-        .log(log, &env).unwrap();
+        .log(log, &env).expect("could not create remote binary directory");
     upload_file_to(&Path::new("driver").join("cpp"), "src")
-        .log(log, &env).unwrap();
+        .log(log, &env).expect("could not upload C++ driver sources");
 
     let halide_path = env.lib.join("halide");
     let polymage_path = env.lib.join("polymage");
@@ -35,10 +36,10 @@ pub fn harris(env: &Env) {
     let rise_n_shine_path = env.lib.join("harris-rise-and-shine");
     let gen_path = rise_n_shine_path.join("gen");
     upload_file_to(&gen_path, "shine-gen")
-        .log(log, env).unwrap();
+        .log(log, env).expect("could not upload Rise OpenCL kernels");
 
     upload_file(Path::new("lift-gen"))
-        .log(log, env).unwrap();
+        .log(log, env).expect("could not upload Lift OpenCL kernels");
 
     let bin = &format!("{}/harris", env.remote_bin);
     if target_run(&env.target.remote_cc)
@@ -76,13 +77,15 @@ pub fn harris(env: &Env) {
             .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("30")
             .arg("harris.png")
             .envs(envs.iter().cloned())
-            .log(log, env).unwrap()
+            .log(log, env)
+            .expect("benchmark run failed")
     } else {
         target_run(bin)
             .arg("lib/halide/apps/images/rgb.png")
             .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("30")
             .arg("harris.png")
-            .log(log, env).unwrap()
+            .log(log, env)
+            .expect("benchmark run failed")
     };
     record_result(&output1, res);
     let output2 = if let Some(ref cpu_a) = env.target.cpu_affinity {
@@ -91,37 +94,43 @@ pub fn harris(env: &Env) {
             .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("30")
             .arg("venice_harris.jpg")
             .envs(envs.iter().cloned())
-            .log(log, env).unwrap()
+            .log(log, env)
+            .expect("benchmark run failed")
     } else {
         target_run(bin)
             .arg("lib/polymage/images/venice_wikimedia.jpg")
             .arg(&env.target.ocl_platform_name).arg(device_type_str).arg("30")
             .arg("venice_harris.jpg")
-            .log(log, env).unwrap()
+            .log(log, env)
+            .expect("benchmark run failed")
     };
     record_result(&output2, res);
 
     if let Some(ref cmd) = env.target.after_measuring {
-        target_run(cmd).log(log, &env).unwrap();
+        target_run(cmd).log(log, &env)
+            .expect("could not run required command after measuring");
     }
 }
 
 fn benchmark_result(env: &Env) -> (fs::File, fs::File) {
     let path = env.results.join("benchmark");
-    println!("{} -> {}[.data]", "-- benchmarking".yellow(), path.to_str().unwrap());
-    (fs::File::create(&path).unwrap(),
-     fs::File::create(path.with_extension("data")).unwrap())
+    println!("{} -> {}[.log/.data]", "-- benchmarking".yellow(), path.to_str().unwrap());
+    (fs::File::create(path.with_extension("log"))
+         .expect("could not create log file"),
+     fs::File::create(path.with_extension("data"))
+         .expect("could not create data file"))
 }
 
 fn record_result(out: &str, res: &mut fs::File) {
     let mut sp = out.split_whitespace();
+    let err = "could not record result";
     while let Some(size) = sp.next() {
-        let generator = sp.next().unwrap();
-        let variant = sp.next().unwrap();
-        let med = sp.next().unwrap();
-        let min = sp.next().unwrap();
-        let max = sp.next().unwrap();
+        let generator = sp.next().expect(err);
+        let variant = sp.next().expect(err);
+        let med = sp.next().expect(err);
+        let min = sp.next().expect(err);
+        let max = sp.next().expect(err);
         println!("[{}] {:8} {:12}: {:6} median ms [{:6} - {:6}]", size, generator, variant, med, min, max);
     }
-    write!(res, "{}", out).unwrap();
+    write!(res, "{}", out).expect(err);
 }

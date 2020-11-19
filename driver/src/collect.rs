@@ -27,5 +27,5 @@ pub fn hardware_info(env: &Env) {
 fn collection_result(name: &str, desc: &str, env: &Env) -> fs::File {
     let path = env.results.join(name);
     println!("{} -> {}", format!("-- collecting {}", desc).yellow(), path.to_str().unwrap());
-    fs::File::create(path).unwrap()
+    fs::File::create(path).expect("could not create collection file")
 }

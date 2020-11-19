@@ -4,9 +4,11 @@ use crate::*;
 
 impl Target {
     pub fn load<P: AsRef<Path>>(path: P) -> Target {
-        let f = fs::File::open(path.as_ref()).unwrap();
+        let f = fs::File::open(path.as_ref())
+            .expect("could not open target file");
         let r = io::BufReader::new(f);
-        serde_yaml::from_reader(r).unwrap()
+        serde_yaml::from_reader(r)
+            .expect("could not read target file")
     }
 }
 

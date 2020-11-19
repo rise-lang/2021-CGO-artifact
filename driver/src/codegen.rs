@@ -30,7 +30,7 @@ pub fn rise(env: &Env) {
 
     let rise_n_shine_path = env.lib.join("harris-rise-and-shine");
     fs::create_dir_all(rise_n_shine_path.join("gen"))
-        .unwrap();
+        .expect("could not create Rise codegen directory");
 
     let rise_n_shine_path = env.lib.join("harris-rise-and-shine");
     host_run("sbt").arg(format!("run {}", env.target.vector_width))
@@ -40,6 +40,6 @@ pub fn rise(env: &Env) {
 
 fn codegen_result(name: &str, env: &Env) -> fs::File {
     let path = env.results.join(format!("codegen-{}", name));
-    println!("{} -> {}", format!("-- generating code with {}", name).yellow(), path.to_str().unwrap());
-    fs::File::create(path).unwrap()
+    println!("{} -> {}.log", format!("-- generating code with {}", name).yellow(), path.to_str().unwrap());
+    fs::File::create(path.with_extension("log")).unwrap()
 }
