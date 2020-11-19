@@ -16,17 +16,18 @@ Other OpenCL-enabled processors can be used, but expect different performance be
 
 ## Reproducing the paper results
 
-After installing dependencies and cloning this repository on the host, you can:
-1. Use the Halide and Rise compilers to generate binaries and OpenCL kernels for a $TARGET by running `./codegen -t $TARGET.yaml`
-2. Reproduce the performance results for every $TARGET (cortex-a7, cortex-a15, cortex-a53, cortex-a73):
-    - generate code by running `./codegen -t $TARGET.yaml`
-    - run benchmarks by running `./benchmark -t $TARGET.yaml`
-3. Plot figure 1 and 8 with `./plot-figures`
+Follow these steps to reproduce the paper results:
+1. Install host dependencies
+2. Clone this repository on the host
+3. Use the Halide and Rise compilers to generate binaries and OpenCL kernels for each target (e.g. cortex-a7, cortex-a15, cortex-a53, cortex-a73)
+4. Configure each target
+5. Reproduce the performance results by running benchmarks for each target
+6. Plot figure 1 and 8
 
 All of this should be feasible in one or two hours once dependencies are installed and targets are configured.
 The following sections provide more details for every step.
 
-## Installing Host Dependencies
+## 1. Installing Host Dependencies
 
 We provide a docker image for convenience, which you can download, build and run:
 ```sh
@@ -47,7 +48,7 @@ Alternatively, install the following required software:
   - R 3.6 to 4.0
   - DejaVu Sans font
 
-## Cloning the repository
+## 2. Cloning the repository
 
 To install the artifact on the host (potentially from the provided docker container):
 
@@ -56,44 +57,14 @@ git clone --recursive https://github.com/rise-lang/2021-CGO-artifact.git
 cd 2021-CGO-artifact
 ```
 
-## Generating code
+## 3. Generating code
 
 Running `./codegen -t $TARGET.yaml` on the host will generate Halide binaries in `lib/halide/apps/harris/bin/` and Rise kernels in `lib/harris-rise-and-shine/gen/`.
 The generated code is affected by the `halide` target string and `vector-width` specified in the `$TARGET.yaml` configuration file.
 SSH access to a properly configured target is not required at this point (everything happens on the host).
 Building Halide and Rise can take some time on the first run, after that code generation should take within a minute.
 
-## Running benchmarks
-
-Running `./benchmark -t $TARGET.yaml` on the host will:
-- create a `2021-CGO-experiment` folder in the home directory of the remote user, where the necessary files will be automatically uploaded.
-- benchmark the performance of the Harris operator using OpenCV, Halide, Rise and Lift implementations; checking output correctness
-  - for the small image `lib/halide/apps/images/rgb.png`
-  - for the big image `lib/polymage/images/venice_wikimedia.jpg`
-- record the benchmark results on the host in `results/$TARGET/benchmark.data`.
-
-At this point SSH access to a properly configured target is required (see target configuration section).
-Benchmarking takes roughly between 2 and 10mn depending on the target.
-
-## Plotting the figures
-
-If you could not run the benchmarks on all the processors used in the paper,
-you will still be able to plot the figures using our own benchmark data, which is included in this artifact.
-
-First, either create or symlink `lib/Rlibs`, where R libraries will be fetched and stored:
-```sh
-# use a fresh directory
-mkdir lib/Rlibs
-# or use an existing directory to avoid duplication
-ln -s ~/.rlibs lib/Rlibs
-# alternatively do neither to use system libraries (requires sudo)
-```
-
-Running `./plot-figures` on the host will generate:
-- `results/figure1.pdf`, some visual details are different from the paper figure because it was edited using Inkscape.
-- `results/figure8.pdf`
-
-## Target Configuration
+## 4. Target Configuration
 
 This artifact includes configuration files used for the paper (`.yaml` files at the root).
 You will need to tweak them according to your setup (e.g. change the ssh destination in the `remote` field).
@@ -158,6 +129,37 @@ cmake -D CMAKE_BUILD_TYPE=RELEASE \
   -D INSTALL_PYTHON_EXAMPLES=OFF \
   -D BUILD_EXAMPLES=OFF ..
 ```
+
+## 5. Running benchmarks
+
+Running `./benchmark -t $TARGET.yaml` on the host will:
+- create a `2021-CGO-experiment` folder in the home directory of the remote user, where the necessary files will be automatically uploaded.
+- benchmark the performance of the Harris operator using OpenCV, Halide, Rise and Lift implementations; checking output correctness
+  - for the small image `lib/halide/apps/images/rgb.png`
+  - for the big image `lib/polymage/images/venice_wikimedia.jpg`
+- record the benchmark results on the host in `results/$TARGET/benchmark.data`.
+
+At this point SSH access to a properly configured target is required (see target configuration section).
+Benchmarking takes roughly between 2 and 10mn depending on the target.
+
+## 6. Plotting the figures
+
+If you could not run the benchmarks on all the processors used in the paper,
+you will still be able to plot the figures using our own benchmark data, which is included in this artifact.
+
+First, either create or symlink `lib/Rlibs`, where R libraries will be fetched and stored:
+```sh
+# use a fresh directory
+mkdir lib/Rlibs
+# or use an existing directory to avoid duplication
+ln -s ~/.rlibs lib/Rlibs
+# alternatively do neither to use system libraries (requires sudo)
+```
+
+Running `./plot-figures` on the host will generate:
+- `results/figure1.pdf`, some visual details are different from the paper figure because it was edited using Inkscape.
+- `results/figure8.pdf`
+
 
 ## Looking at the Logs
 
