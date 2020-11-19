@@ -34,7 +34,8 @@ pub fn harris(env: &Env) {
         .log(log, env).expect("could not upload harris files");
 
     let rise_n_shine_path = env.lib.join("harris-rise-and-shine");
-    let gen_path = rise_n_shine_path.join("gen");
+    let gen_path = rise_n_shine_path.join("gen")
+        .join(format!("vec{}", env.target.vector_width));
     upload_file_to(&gen_path, "shine-gen")
         .log(log, env).expect("could not upload Rise OpenCL kernels");
 

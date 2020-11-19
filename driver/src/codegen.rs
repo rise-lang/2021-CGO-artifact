@@ -29,7 +29,8 @@ pub fn rise(env: &Env) {
         .log(log, env).expect("could not setup shine repository");
 
     let rise_n_shine_path = env.lib.join("harris-rise-and-shine");
-    fs::create_dir_all(rise_n_shine_path.join("gen"))
+    fs::create_dir_all(rise_n_shine_path.join("gen")
+        .join(format!("vec{}", env.target.vector_width)))
         .expect("could not create Rise codegen directory");
 
     let rise_n_shine_path = env.lib.join("harris-rise-and-shine");
