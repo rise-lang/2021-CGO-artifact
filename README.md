@@ -12,7 +12,7 @@ To fully reproduce the results reported in Figures 1 and 8, you will need access
 (we used Odroid XU4 and Odroid N2 boards for the paper).
 Other OpenCL-enabled processors can be used, but expect different performance behavior.
 
-**TODO: provide access to our own Odroid XU4 and Odroid N2 boards for convenience? give ssh key instructions**
+If you are an artifact evaluator, we are working on providing you access to our own Odroid XU4 and Odroid N2 boards for convenience and will get back to you with access instructions.
 
 ## Reproducing the paper results
 
@@ -24,10 +24,10 @@ Follow these steps to reproduce the paper results:
 5. Reproduce the performance results by running benchmarks for each target
 6. Plot figure 1 and 8
 
-All of this should be feasible in one or two hours once dependencies are installed and targets are configured.
+Excluding dependency installation and target configuration, these steps should be feasible in one or two hours.
 The following sections provide more details for every step.
 
-## 1. Installing Host Dependencies
+## 1. Installing host dependencies
 
 We provide a docker image for convenience, which you can download, build and run:
 ```sh
@@ -64,7 +64,7 @@ The generated code is affected by the `halide` target string and `vector-width` 
 SSH access to a properly configured target is not required at this point (everything happens on the host).
 Building Halide and Rise can take some time on the first run, after that code generation should take within a minute.
 
-## 4. Target Configuration
+## 4. Configuring targets
 
 This artifact includes configuration files used for the paper (`.yaml` files at the root).
 You will need to tweak them according to your setup (e.g. change the ssh destination in the `remote` field).
@@ -161,7 +161,7 @@ Running `./plot-figures` on the host will generate:
 - `results/figure8.pdf`
 
 
-## Looking at the Logs
+## Looking at the logs
 
 You can use `cat` or `less -R` on the logs in a `results/$TARGET` directory:
 
